@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Đăng nhập vào LearnHub để truy cập khóa học của bạn">
+    <title>Đăng nhập – LearnHub</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="logo-area">Learn<span style="color:#06b6d4">Hub</span></div>
+        <h2>Chào mừng trở lại 👋</h2>
+        <p class="subtitle">Đăng nhập để tiếp tục hành trình học tập</p>
+
+        <div id="alertBox" class="alert" style="display:none"></div>
+
+        <form id="loginForm" novalidate>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="example@email.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="password">Mật khẩu</label>
+                <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top:0.5rem">Đăng nhập</button>
+        </form>
+
+        <p style="text-align:center;margin-top:1.5rem;font-size:0.9rem;color:#64748b">
+            Chưa có tài khoản? <a href="register.html" style="color:#4f46e5;font-weight:600">Đăng ký ngay</a>
+        </p>
+        <p style="text-align:center;margin-top:0.5rem;font-size:0.9rem">
+            <a href="index.html" style="color:#64748b">← Về trang chủ</a>
+        </p>
+    </div>
+</div>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

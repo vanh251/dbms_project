@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LearnHub – Nền tảng học trực tuyến hàng đầu với hàng trăm khóa học chất lượng cao">
+    <title>LearnHub – Học trực tuyến</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a class="logo" href="index.html">Learn<span>Hub</span></a>
+    <div class="nav-links">
+        <a href="index.html" class="hide-mobile">Trang chủ</a>
+        <div id="navAuth"></div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <h1>Học bất cứ điều gì,<br>bất cứ lúc nào</h1>
+    <p>Hàng trăm khóa học chất lượng cao từ các chuyên gia hàng đầu. Bắt đầu hành trình học tập của bạn ngay hôm nay!</p>
+    <div class="hero-actions">
+        <a href="register.html" class="btn btn-secondary">🚀 Đăng ký miễn phí</a>
+        <a href="#courses" class="btn btn-outline" style="color:#fff;border-color:#fff">Khám phá khóa học</a>
+    </div>
+</section>
+
+<!-- Course List -->
+<div class="container">
+    <!-- All Courses -->
+    <section class="section" id="courses">
+        <h2 class="section-title">📚 Tất cả khóa học</h2>
+        <p class="section-subtitle">Khám phá thư viện khóa học đa dạng của chúng tôi</p>
+        <div class="courses-grid" id="courseGrid">
+            <!-- Loaded by main.js -->
+        </div>
+    </section>
+
+    <!-- My Courses (if logged in) -->
+    <section class="section" id="myCoursesSection" style="display:none">
+        <h2 class="section-title">🎯 Khóa học của tôi</h2>
+        <p class="section-subtitle">Các khóa học bạn đã được cấp quyền truy cập</p>
+        <div class="courses-grid" id="myCoursesGrid"></div>
+    </section>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>© 2026 LearnHub – E-Learning Platform. Made with ❤️</p>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+// Show "My Courses" section if logged in
+document.addEventListener('DOMContentLoaded', () => {
+    if (isLoggedIn()) {
+        document.getElementById('myCoursesSection').style.display = 'block';
+    }
+});
+</script>
+</body>
+</html>

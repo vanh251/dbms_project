@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Đăng ký tài khoản LearnHub miễn phí">
+    <title>Đăng ký – LearnHub</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="logo-area">Learn<span style="color:#06b6d4">Hub</span></div>
+        <h2>Tạo tài khoản mới 🎉</h2>
+        <p class="subtitle">Đăng ký miễn phí và bắt đầu học ngay!</p>
+
+        <div id="alertBox" class="alert" style="display:none"></div>
+
+        <form id="registerForm" novalidate>
+            <div class="form-group">
+                <label for="fullname">Họ và tên *</label>
+                <input type="text" id="fullname" placeholder="Nguyễn Văn A" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" placeholder="example@email.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="phone">Số điện thoại</label>
+                <input type="tel" id="phone" placeholder="0901234567">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Mật khẩu *</label>
+                    <input type="password" id="password" placeholder="Tối thiểu 6 ký tự" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm">Xác nhận mật khẩu *</label>
+                    <input type="password" id="confirm" placeholder="Nhập lại mật khẩu" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top:0.5rem">Tạo tài khoản</button>
+        </form>
+
+        <p style="text-align:center;margin-top:1.5rem;font-size:0.9rem;color:#64748b">
+            Đã có tài khoản? <a href="login.html" style="color:#4f46e5;font-weight:600">Đăng nhập</a>
+        </p>
+        <p style="text-align:center;margin-top:0.5rem;font-size:0.9rem">
+            <a href="index.html" style="color:#64748b">← Về trang chủ</a>
+        </p>
+    </div>
+</div>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>
