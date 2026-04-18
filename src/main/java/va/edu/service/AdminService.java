@@ -119,6 +119,12 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    public Map<String, Object> createCategory(String name) {
+        CourseCategory category = CourseCategory.builder().name(name).build();
+        CourseCategory saved = categoryRepository.save(category);
+        return Map.<String, Object>of("id", saved.getId(), "name", saved.getName());
+    }
+
     private CourseDTO toCourseDTO(Course c) {
         return CourseDTO.builder()
                 .id(c.getId()).name(c.getName()).slug(c.getSlug())

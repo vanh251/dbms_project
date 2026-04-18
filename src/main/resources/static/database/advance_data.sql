@@ -134,3 +134,30 @@ WHERE c.id IN (
 );
 END;
 $$;
+
+-- thủ tục xoá danh mục các khoá học
+CREATE OR REPLACE PROCEDURE sp_Delete_Category_Cascade(p_category_id INT)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- 1. Quét sạch tất cả bình luận thuộc về các khóa học trong danh mục này
+DELETE FROM comments WHERE lession_id IN (
+    SELECT id FROM lessions WHERE course_id IN (SELECT id FROM courses WHERE category_id = p_category_id)
+);
+
+-- 2. Xóa toàn bộ bài học
+DELETE FROM lessions WHERE course_id IN (SELECT id FROM courses WHERE category_id = p_category_id);
+
+-- 3. Xóa toàn bộ các chương
+DELETE FROM part_of_courses WHERE course_id IN (SELECT id FROM courses WHERE category_id = p_category_id);
+
+-- 4. Xóa toàn bộ khóa học nằm trong danh mục
+DELETE FROM courses WHERE category_id = p_category_id;
+
+-- 5. Cuối cùng, "tiêu diệt" danh mục
+DELETE FROM course_categories WHERE id = p_category_id;
+END;
+$$;
+
+-- Cách gọi thử:
+-- CALL sp_Delete_Category_Cascade(1);

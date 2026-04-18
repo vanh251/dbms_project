@@ -77,4 +77,13 @@ public class AdminController {
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getCategories() {
         return ResponseEntity.ok(ApiResponse.success(adminService.getAllCategories()));
     }
+
+    @PostMapping("/categories")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createCategory(@RequestBody Map<String, String> body) {
+        String name = body.get("name");
+        if (name == null || name.isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Tên danh mục không được để trống"));
+        }
+        return ResponseEntity.ok(ApiResponse.success("Thêm danh mục thành công", adminService.createCategory(name)));
+    }
 }

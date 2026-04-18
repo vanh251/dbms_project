@@ -271,6 +271,21 @@ async function loadAdminCategories() {
     `).join('');
 }
 
+function openCreateCategory() {
+    showModal('Thêm danh mục mới', `
+        <div class="form-group"><label>Tên danh mục *</label><input type="text" id="cat-name" placeholder="VD: Lập trình Web"></div>
+        <button class="btn btn-primary btn-block" onclick="submitCreateCategory()">💾 Tạo danh mục</button>
+    `);
+}
+
+async function submitCreateCategory() {
+    const name = document.getElementById('cat-name').value.trim();
+    if (!name) { alert('Tên danh mục không được để trống'); return; }
+    await apiFetch('/api/admin/categories', { method: 'POST', body: JSON.stringify({ name }) });
+    closeModal();
+    loadAdminCategories();
+}
+
 // =============================================================
 // MODAL UTILITIES
 // =============================================================
