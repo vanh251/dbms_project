@@ -1,8 +1,6 @@
 package va.edu.service;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.ParameterMode;
-import jakarta.persistence.StoredProcedureQuery;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import va.edu.dto.PaymentDTO;
@@ -17,14 +15,17 @@ import va.edu.repository.UserRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
-    private final EntityManager entityManager;
+    private final va.edu.repository.UserCourseRepository userCourseRepository;
 
     public PaymentDTO createPaymentOrder(String email, Integer courseId, PaymentRequest req) {
         User user = userRepository.findByEmail(email)
@@ -32,32 +33,74 @@ public class PaymentService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
-        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("sp_create_payment_order");
-        query.registerStoredProcedureParameter("p_user_id", Integer.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter("p_course_id", Integer.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter("p_payment_method", String.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter("p_order_id", Integer.class, ParameterMode.INOUT);
+        java.math.BigDecimal amount = java.math.BigDecimal.ZERO;
+        try {
+            if (course.getPrice() != null && !course.getPrice().isBlank()) {
+                String numericPrice = course.getPrice().replaceAll("[^0-9]", "");
+                if (!numericPrice.isEmpty()) {
+                    amount = new java.math.BigDecimal(numericPrice);
+                }
+            }
+        } catch (Exception e) {
+            // Ignore parse error, default to 0
+        }
 
-        query.setParameter("p_user_id", user.getId());
-        query.setParameter("p_course_id", courseId);
-        query.setParameter("p_payment_method", req.getPaymentMethod());
-        query.setParameter("p_order_id", null);
+        Payment payment = Payment.builder()
+                .user(user)
+                .course(course)
+                .amount(amount)
+                .paymentMethod(req.getPaymentMethod())
+                .status(0)
+                .createAt(java.time.LocalDateTime.now())
+                .updateAt(java.time.LocalDateTime.now())
+                .build();
 
-        query.execute();
-
-        Integer orderId = (Integer) query.getOutputParameterValue("p_order_id");
-
-        Payment payment = paymentRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Failed to retrieve created payment order"));
-
+        payment = paymentRepository.save(payment);
         return toDTO(payment);
     }
 
-    public PaymentDTO confirmPayment(Integer orderId, String transactionId) {
-        paymentRepository.confirmPayment(orderId, transactionId);
-
+    public PaymentDTO confirmPayment(Integer orderId) {
         Payment payment = paymentRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Payment not found after confirmation"));
+                .orElseThrow(() -> new RuntimeException("Payment not found"));
+
+        if (payment.getStatus() == 1) {
+            return toDTO(payment); // Already confirmed
+        }
+
+        payment.setStatus(1);
+        payment.setTransactionId("MANUAL_CONFIRM");
+        payment.setUpdateAt(java.time.LocalDateTime.now());
+        payment = paymentRepository.save(payment);
+
+        User user = payment.getUser();
+        Course course = payment.getCourse();
+
+        // 1. Update user permissions (comma separated string)
+        String currentPerms = user.getPermission();
+        if (currentPerms == null || currentPerms.trim().isEmpty()) {
+            user.setPermission(String.valueOf(course.getId()));
+        } else {
+            List<String> permList = new java.util.ArrayList<>(java.util.Arrays.asList(currentPerms.split(",")));
+            if (!permList.contains(String.valueOf(course.getId()))) {
+                permList.add(String.valueOf(course.getId()));
+                user.setPermission(String.join(",", permList));
+            }
+        }
+        userRepository.save(user);
+
+        // 2. Enroll user in course
+        boolean alreadyEnrolled = userCourseRepository.findByUserIdAndCourseId(user.getId(), course.getId()).isPresent();
+        if (!alreadyEnrolled) {
+            va.edu.entity.UserCourse uc = va.edu.entity.UserCourse.builder()
+                    .user(user)
+                    .course(course)
+                    .status(1)
+                    .progressPercent(0)
+                    .createAt(java.time.LocalDateTime.now())
+                    .updateAt(java.time.LocalDateTime.now())
+                    .build();
+            userCourseRepository.save(uc);
+        }
 
         return toDTO(payment);
     }

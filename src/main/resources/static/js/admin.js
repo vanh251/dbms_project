@@ -314,29 +314,26 @@ async function loadAdminPayments() {
 }
 
 function openConfirmPaymentModal(paymentId) {
-    showModal('Duyệt đơn thanh toán', `
-        <p style="color:#64748b;font-size:0.9rem;margin-bottom:1rem">Vui lòng nhập mã giao dịch thực tế (hoặc mã bill) để xác nhận.</p>
-        <div class="form-group">
-            <label>Mã giao dịch *</label>
-            <input type="text" id="tx-id" placeholder="VD: MOMO123456789">
-        </div>
-        <button class="btn btn-primary btn-block" onclick="submitConfirmPayment(${paymentId})">Xác nhận duyệt</button>
-    `);
+    if (confirm('Bạn có chắc chắn muốn duyệt đơn thanh toán này? Người dùng sẽ được cấp quyền học ngay lập tức.')) {
+        submitConfirmPayment(paymentId);
+    }
 }
 
 async function submitConfirmPayment(paymentId) {
-    const txId = document.getElementById('tx-id').value.trim();
-    if (!txId) {
-        alert('Mã giao dịch không được để trống!');
-        return;
+    try {
+        const result = await apiFetch(`/api/admin/payments/${paymentId}/confirm`, {
+            method: 'POST'
+        });
+        
+        if (result) {
+            alert('✅ Duyệt đơn thành công. Hệ thống đã tự động ghi danh User!');
+            loadAdminPayments();
+        } else {
+             alert('❌ Lỗi: Không nhận được phản hồi từ máy chủ.');
+        }
+    } catch (err) {
+        alert('❌ ' + (err.message || 'Lỗi khi duyệt đơn. Vui lòng thử lại.'));
     }
-    await apiFetch(`/api/admin/payments/${paymentId}/confirm`, {
-        method: 'POST',
-        body: JSON.stringify({ transactionId: txId })
-    });
-    alert('✅ Duyệt đơn thành công. Hệ thống đã tự động ghi danh User!');
-    closeModal();
-    loadAdminPayments();
 }
 
 // =============================================================

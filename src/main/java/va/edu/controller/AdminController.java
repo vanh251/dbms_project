@@ -95,13 +95,7 @@ public class AdminController {
     }
 
     @PostMapping("/payments/{id}/confirm")
-    public ResponseEntity<ApiResponse<PaymentDTO>> confirmPayment(
-            @PathVariable Integer id,
-            @RequestBody Map<String, String> body) {
-        String transactionId = body.get("transactionId");
-        if (transactionId == null || transactionId.isBlank()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Mã giao dịch (transactionId) không được để trống"));
-        }
-        return ResponseEntity.ok(ApiResponse.success("Xác nhận thanh toán thành công", paymentService.confirmPayment(id, transactionId)));
+    public ResponseEntity<ApiResponse<PaymentDTO>> confirmPayment(@PathVariable Integer id) {
+        return ResponseEntity.ok(ApiResponse.success("Xác nhận thanh toán thành công", paymentService.confirmPayment(id)));
     }
 }

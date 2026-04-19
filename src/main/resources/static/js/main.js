@@ -110,18 +110,18 @@ async function loadCourseDetail(id) {
 
     document.title = course.name + ' | LearnHub';
 
-    const myCourses = isLoggedIn() ? await apiFetch('/api/client/my-courses').catch(()=>[]) : [];
+    const myCourses = isLoggedIn() ? await apiFetch('/api/client/my-courses').catch(() => []) : [];
     const isEnrolled = (myCourses || []).some(c => c.id === course.id);
 
     // Sidebar
     if (sidebarArea) {
         const emoji = ['📚', '🎯', '💻', '🚀', '🎨', '🔬', '🧮', '🌐'][course.id % 8];
-        const btnHtml = isEnrolled 
+        const btnHtml = isEnrolled
             ? `<button class="btn btn-primary btn-block" onclick="switchTab('learn')">🚀 Học ngay</button>`
             : `<button class="btn btn-primary btn-block" onclick="handleEnroll(${course.id}, '${course.name}', '${course.price}')">
                 ${isLoggedIn() ? '💳 Mua khóa học' : '🔑 Đăng nhập để mua'}
                </button>`;
-               
+
         sidebarArea.innerHTML = `
             <div class="thumb">${emoji}</div>
             <div class="price-block">
@@ -289,27 +289,68 @@ function handleEnroll(courseId, courseName, price) {
 }
 
 // =============================================================
-// PAYMENTS (Client)
+// PAYMENTS (Client) - VietQR Integration
 // =============================================================
 function openBuyModal(courseId, courseName, price) {
     const modal = document.getElementById('buyModalOverlay');
     const body = document.getElementById('buyModalBody');
     if (!modal) return;
     
+    // Parse price to number for VietQR (e.g. "299.000đ" -> 299000)
+    let amountStr = String(price || '0').replace(/[^0-9]/g, '');
+    let amountNum = parseInt(amountStr) || 0;
+    let isFree = amountNum === 0;
+
+    // VietQR Info (Mock Account)
+    const bankBin = '970407'; // MBBank
+    const accountNo = '19037247346017';
+    const accountName = 'NGUYEN VIET ANH';
+    // Generate VietQR URL
+    const addInfo = encodeURIComponent(`Thanh toan khoa hoc ${courseId}`);
+    const vietQrUrl = `https://img.vietqr.io/image/${bankBin}-${accountNo}-compact.png?amount=${amountNum}&addInfo=${addInfo}&accountName=${encodeURIComponent(accountName)}`;
+
     body.innerHTML = `
         <p style="margin-bottom:1rem">Bạn đang yêu cầu mua khóa học: <strong>${courseName}</strong></p>
         <p style="margin-bottom:1rem">Số tiền: <strong style="color:#22c55e">${price || 'Miễn phí'}</strong></p>
+        
+        ${!isFree ? `
         <div class="form-group">
             <label>Chọn phương thức thanh toán *</label>
-            <select id="pm-method" style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid #e2e8f0;margin-top:0.5rem">
+            <select id="pm-method" style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid #e2e8f0;margin-top:0.5rem" onchange="toggleVietQR()">
+                <option value="VietQR">Chuyển khoản VietQR (Khuyên dùng)</option>
                 <option value="VNPay">Ví VNPay</option>
                 <option value="Momo">Ví Momo</option>
-                <option value="Chuyển khoản ngân hàng">Chuyển khoản ngân hàng</option>
+                <option value="Chuyển khoản ngân hàng">Chuyển khoản thủ công</option>
             </select>
         </div>
-        <button class="btn btn-primary btn-block" style="margin-top:1.5rem" onclick="submitBuyCourse(${courseId})">Xác nhận tạo đơn</button>
+        
+        <!-- VietQR Box -->
+        <div id="vietQrBox" style="text-align:center; margin-top:1.5rem; padding:1rem; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc">
+            <p style="font-size:0.9rem; color:#64748b; margin-bottom:0.5rem">Mở app Ngân hàng để quét mã QR</p>
+            <img src="${vietQrUrl}" alt="VietQR" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <p style="font-size:0.85rem; color:#ef4444; margin-top:0.5rem; font-style:italic">Vui lòng quét QR để chuyển khoản trước khi nhấn "Xác nhận tạo đơn".</p>
+        </div>
+        ` : `
+        <div class="form-group" style="display:none">
+            <select id="pm-method"><option value="Miễn phí">Miễn phí</option></select>
+        </div>
+        <p style="color:#16a34a; font-weight:bold; margin-top:1rem">Khóa học này miễn phí!</p>
+        `}
+        
+        <button class="btn btn-primary btn-block" style="margin-top:1.5rem" onclick="submitBuyCourse(${courseId})">
+            ${isFree ? 'Nhận khóa học miễn phí' : 'Xác nhận tạo đơn'}
+        </button>
     `;
     modal.classList.add('open');
+}
+
+// Helper to show/hide VietQR based on selection
+window.toggleVietQR = function() {
+    const method = document.getElementById('pm-method').value;
+    const qrBox = document.getElementById('vietQrBox');
+    if (qrBox) {
+        qrBox.style.display = (method === 'VietQR') ? 'block' : 'none';
+    }
 }
 
 function closeBuyModal() {
@@ -319,21 +360,41 @@ function closeBuyModal() {
 
 async function submitBuyCourse(courseId) {
     const method = document.getElementById('pm-method').value;
-    const res = await apiFetch(`/api/client/courses/${courseId}/buy`, {
-        method: 'POST',
-        body: JSON.stringify({ paymentMethod: method })
-    });
-    if (res && res.id) {
-        alert('✅ Đã tạo đơn hàng thành công! Vui lòng chờ Admin duyệt.');
-        closeBuyModal();
-        window.location.href = 'index.html';
+    const btn = document.querySelector('#buyModalBody button.btn-primary');
+    
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Đang xử lý...';
+    }
+
+    try {
+        const res = await apiFetch(`/api/client/courses/${courseId}/buy`, {
+            method: 'POST',
+            body: JSON.stringify({ paymentMethod: method })
+        });
+        
+        if (res && res.id) {
+            alert('✅ Đã tạo đơn hàng thành công! Vui lòng chờ Admin duyệt.');
+            closeBuyModal();
+            window.location.href = 'index.html';
+        } else {
+            alert('❌ Có lỗi xảy ra, không thể tạo đơn hàng.');
+        }
+    } catch (err) {
+        alert('❌ ' + (err.message || 'Đã xảy ra lỗi hệ thống.'));
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            const isFree = method === 'Miễn phí';
+            btn.textContent = isFree ? 'Nhận khóa học miễn phí' : 'Xác nhận tạo đơn';
+        }
     }
 }
 
 async function loadMyPayments() {
     const tbody = document.getElementById('myPaymentsTable');
     if (!tbody) return;
-    
+
     try {
         const payments = await apiFetch('/api/client/my-payments');
         if (!payments || payments.length === 0) {
