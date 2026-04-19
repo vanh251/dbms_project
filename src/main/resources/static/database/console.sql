@@ -1,4 +1,4 @@
-﻿-- 1. Bảng Nhóm tài khoản (Phải tạo trước để users tham chiếu tới)
+-- 1. Bảng Nhóm tài khoản (Phải tạo trước để users tham chiếu tới)
 CREATE TABLE "groups" (
                           "id" SERIAL PRIMARY KEY, -- SERIAL tự động tăng trong Postgres
                           "name" VARCHAR(50) NOT NULL,
@@ -99,12 +99,12 @@ CREATE TABLE "comments" (
 -- ==============================================================================
 CREATE TABLE "user_courses" (
     "id" SERIAL PRIMARY KEY,
-    "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
-    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,
-    "progress_percent" INT DEFAULT 0, 
-    "status" INT DEFAULT 1, 
-    "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,   -- ID của học viên đăng ký
+    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE, -- ID của khóa học được đăng ký
+    "progress_percent" INT DEFAULT 0, -- Phần trăm tiến độ hoàn thành khóa học (0 - 100)
+    "status" INT DEFAULT 1,           -- Trạng thái học: 0: Đã hủy (Unenrolled), 1: Đang học (Enrolled), 2: Đã hoàn thành (Completed)
+    "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Thời gian đăng ký khóa học
+    "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Thời gian cập nhật thông tin gần nhất
 );
 
 -- ==============================================================================
@@ -112,13 +112,13 @@ CREATE TABLE "user_courses" (
 -- ==============================================================================
 CREATE TABLE "payments" (
     "id" SERIAL PRIMARY KEY,
-    "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
-    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,
-    "amount" DECIMAL(15,2) NOT NULL, 
-    "payment_method" VARCHAR(50),      
-    "status" INT DEFAULT 0,            
-    "transaction_id" VARCHAR(100),     
-    "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,     -- Người thực hiện thanh toán
+    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,   -- Khóa học được thanh toán
+    "amount" DECIMAL(15,2) NOT NULL,    -- Số tiền phải thanh toán (VNĐ)
+    "payment_method" VARCHAR(50),       -- Phương thức thanh toán (VNPAY, MOMO, CASH,...)
+    "status" INT DEFAULT 0,             -- Trạng thái thanh toán: 0: Đang chờ (Pending), 1: Đã thanh toán (Completed), -1: Thất bại/Hủy (Failed)
+    "transaction_id" VARCHAR(100),      -- Mã giao dịch đối soát trả về từ đối tác thanh toán (VD: VNP_xx)
+    "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Thời gian tạo hóa đơn
+    "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Thời gian cập nhật trạng thái thanh toán
 );
 
