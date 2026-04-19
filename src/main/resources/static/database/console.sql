@@ -1,4 +1,4 @@
--- 1. Bảng Nhóm tài khoản (Phải tạo trước để users tham chiếu tới)
+﻿-- 1. Bảng Nhóm tài khoản (Phải tạo trước để users tham chiếu tới)
 CREATE TABLE "groups" (
                           "id" SERIAL PRIMARY KEY, -- SERIAL tự động tăng trong Postgres
                           "name" VARCHAR(50) NOT NULL,
@@ -93,3 +93,32 @@ CREATE TABLE "comments" (
                             "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                             "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ==============================================================================
+-- 9. Bảng Ghi danh khóa học (Enrollment)
+-- ==============================================================================
+CREATE TABLE "user_courses" (
+    "id" SERIAL PRIMARY KEY,
+    "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
+    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,
+    "progress_percent" INT DEFAULT 0, 
+    "status" INT DEFAULT 1, 
+    "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ==============================================================================
+-- 10. Bảng Thanh toán (Payments)
+-- ==============================================================================
+CREATE TABLE "payments" (
+    "id" SERIAL PRIMARY KEY,
+    "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
+    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,
+    "amount" DECIMAL(15,2) NOT NULL, 
+    "payment_method" VARCHAR(50),      
+    "status" INT DEFAULT 0,            
+    "transaction_id" VARCHAR(100),     
+    "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

@@ -217,3 +217,31 @@ INSERT INTO "comments" (user_id, lession_id, content, parent_id) VALUES
 -- LEFT JOIN lessions l ON l.course_id = c.id
 -- GROUP BY c.name;
 -- -------------------------------------------------------
+
+
+-- -------------------------------------------------------
+-- 9. DỮ LIỆU THANH TOÁN (PAYMENTS) VÀ GHI DANH (ENROLLMENTS)
+-- (Tương ứng với comment: user 1 (id=2) truy cập course 1,3 và user 2 (id=3) truy cập 1,2,3,4)
+-- -------------------------------------------------------
+
+-- Thêm lịch sử thanh toán giả lập (cho các khóa có phí)
+INSERT INTO "payments" (id, user_id, course_id, amount, payment_method, status, transaction_id) VALUES
+(1, 3, 2, 299000.00, 'VNPAY', 1, 'VNP_999999991'), -- User 3 mua khóa 2 (Chat App)
+(2, 3, 4, 199000.00, 'MOMO', 1, 'MOMO_888888882'); -- User 3 mua khóa 4 (Next.js)
+
+SELECT setval(pg_get_serial_sequence('"payments"', 'id'), (SELECT MAX(id) FROM "payments"));
+
+-- Thêm quyền ghi danh (Enrollments)
+INSERT INTO "user_courses" (user_id, course_id, progress_percent, status) VALUES
+-- Học viên 1 (id = 2) đang học khóa 1, 3
+(2, 1, 20, 1),
+(2, 3, 100, 2), -- Đã hoàn thành
+
+-- Học viên 2 (id = 3) đang học khóa 1, 2, 3, 4
+(3, 1, 0, 1),
+(3, 2, 50, 1),
+(3, 3, 0, 1),
+(3, 4, 10, 1);
+
+SELECT setval(pg_get_serial_sequence('"user_courses"', 'id'), (SELECT MAX(id) FROM "user_courses"));
+
