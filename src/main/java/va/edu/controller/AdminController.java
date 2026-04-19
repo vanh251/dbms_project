@@ -14,6 +14,7 @@ import java.util.*;
 public class AdminController {
 
     private final AdminService adminService;
+    private final va.edu.service.PaymentService paymentService;
 
     // --- COURSES ---
     @GetMapping("/courses")
@@ -85,5 +86,22 @@ public class AdminController {
             return ResponseEntity.badRequest().body(ApiResponse.error("Tên danh mục không được để trống"));
         }
         return ResponseEntity.ok(ApiResponse.success("Thêm danh mục thành công", adminService.createCategory(name)));
+    }
+
+    // --- PAYMENTS ---
+    @GetMapping("/payments")
+    public ResponseEntity<ApiResponse<List<PaymentDTO>>> getAllPayments() {
+        return ResponseEntity.ok(ApiResponse.success(paymentService.getAllPayments()));
+    }
+
+    @PostMapping("/payments/{id}/confirm")
+    public ResponseEntity<ApiResponse<PaymentDTO>> confirmPayment(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body) {
+        String transactionId = body.get("transactionId");
+        if (transactionId == null || transactionId.isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Mã giao dịch (transactionId) không được để trống"));
+        }
+        return ResponseEntity.ok(ApiResponse.success("Xác nhận thanh toán thành công", paymentService.confirmPayment(id, transactionId)));
     }
 }

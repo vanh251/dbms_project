@@ -20,8 +20,14 @@ public class AdminService {
 
     // --- COURSE CRUD ---
     public List<CourseDTO> getAllCourses() {
-        return courseRepository.findAll().stream()
-                .map(this::toCourseDTO)
+        return courseRepository.getAdminManageCourses().stream()
+                .map(vw -> CourseDTO.builder()
+                        .id(vw.getCourseId())
+                        .name(vw.getCourseName())
+                        .categoryName(vw.getCategoryName())
+                        .price(vw.getPrice())
+                        .status(vw.getStatus())
+                        .build())
                 .collect(Collectors.toList());
     }
 
@@ -75,8 +81,8 @@ public class AdminService {
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         PartOfCourse part = PartOfCourse.builder().course(course).name(name).build();
         PartOfCourse saved = partRepository.save(part);
-        course.setTotalPart(course.getTotalPart() + 1);
-        courseRepository.save(course);
+        // course.setTotalPart(course.getTotalPart() + 1);
+        // courseRepository.save(course); // Bỏ qua vì đã có Trigger fn_update_total_part
         return Map.of("id", saved.getId(), "name", saved.getName());
     }
 
@@ -93,15 +99,22 @@ public class AdminService {
                 .part(part)
                 .build();
         Lesson saved = lessonRepository.save(lesson);
-        Course course = part.getCourse();
-        course.setTotalLession(course.getTotalLession() + 1);
-        courseRepository.save(course);
+        // Course course = part.getCourse();
+        // course.setTotalLession(course.getTotalLession() + 1);
+        // courseRepository.save(course); // Bỏ qua vì đã có Trigger fn_update_total_lession
         return toLessonDTO(saved);
     }
 
     // --- USER MANAGEMENT ---
     public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream().map(this::toUserDTO).collect(Collectors.toList());
+        return userRepository.getAdminManageUsers().stream()
+                .map(vw -> UserDTO.builder()
+                        .id(vw.getUserId())
+                        .fullname(vw.getFullname())
+                        .email(vw.getEmail())
+                        .groupName(vw.getGroupName())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     public UserDTO grantPermission(Integer userId, String courseIds) {
@@ -114,8 +127,11 @@ public class AdminService {
 
     // --- CATEGORY ---
     public List<Map<String, Object>> getAllCategories() {
-        return categoryRepository.findAll().stream()
-                .map(c -> Map.<String, Object>of("id", c.getId(), "name", c.getName()))
+        return categoryRepository.getAdminManageCategories().stream()
+                .map(vw -> Map.<String, Object>of(
+                        "id", vw.getCategoryId(),
+                        "name", vw.getCategoryName(),
+                        "totalCourses", vw.getTotalCourses()))
                 .collect(Collectors.toList());
     }
 

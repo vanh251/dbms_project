@@ -27,6 +27,7 @@ function showSection(name) {
     if (name === 'courses') loadAdminCourses();
     if (name === 'users') loadAdminUsers();
     if (name === 'categories') loadAdminCategories();
+    if (name === 'payments') loadAdminPayments();
 }
 
 // =============================================================
@@ -284,6 +285,58 @@ async function submitCreateCategory() {
     await apiFetch('/api/admin/categories', { method: 'POST', body: JSON.stringify({ name }) });
     closeModal();
     loadAdminCategories();
+}
+
+// =============================================================
+// PAYMENTS
+// =============================================================
+async function loadAdminPayments() {
+    const tbody = document.getElementById('paymentsTable');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center"><div class="spinner" style="margin:1rem auto"></div></td></tr>';
+    const payments = await apiFetch('/api/admin/payments');
+    if (!payments || payments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b">Không có đơn hàng nào</td></tr>';
+        return;
+    }
+    tbody.innerHTML = payments.map(p => `
+        <tr>
+            <td>${p.id}</td>
+            <td style="font-weight:600">${p.userFullname}</td>
+            <td>${p.courseName}</td>
+            <td style="color:#22c55e;font-weight:bold">${p.amount ? p.amount + 'đ' : 'Miễn phí'}</td>
+            <td>${p.paymentMethod || 'N/A'}</td>
+            <td><span class="badge badge-${p.status === 1 ? 'active' : 'inactive'}">${p.status === 1 ? 'Hoàn thành' : 'Chờ duyệt'}</span></td>
+            <td>
+                ${p.status === 0 ? `<button class="btn btn-sm btn-primary" onclick="openConfirmPaymentModal(${p.id})">✅ Duyệt đơn</button>` : ''}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openConfirmPaymentModal(paymentId) {
+    showModal('Duyệt đơn thanh toán', `
+        <p style="color:#64748b;font-size:0.9rem;margin-bottom:1rem">Vui lòng nhập mã giao dịch thực tế (hoặc mã bill) để xác nhận.</p>
+        <div class="form-group">
+            <label>Mã giao dịch *</label>
+            <input type="text" id="tx-id" placeholder="VD: MOMO123456789">
+        </div>
+        <button class="btn btn-primary btn-block" onclick="submitConfirmPayment(${paymentId})">Xác nhận duyệt</button>
+    `);
+}
+
+async function submitConfirmPayment(paymentId) {
+    const txId = document.getElementById('tx-id').value.trim();
+    if (!txId) {
+        alert('Mã giao dịch không được để trống!');
+        return;
+    }
+    await apiFetch(`/api/admin/payments/${paymentId}/confirm`, {
+        method: 'POST',
+        body: JSON.stringify({ transactionId: txId })
+    });
+    alert('✅ Duyệt đơn thành công. Hệ thống đã tự động ghi danh User!');
+    closeModal();
+    loadAdminPayments();
 }
 
 // =============================================================

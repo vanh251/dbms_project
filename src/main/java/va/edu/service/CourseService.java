@@ -18,8 +18,20 @@ public class CourseService {
     private final UserRepository userRepository;
 
     public List<CourseDTO> getActiveCourses() {
-        return courseRepository.findByStatus(1).stream()
-                .map(this::toCourseDTO)
+        return courseRepository.getClientCourseCards().stream()
+                .map(vw -> CourseDTO.builder()
+                        .id(vw.getCourseId())
+                        .name(vw.getCourseName())
+                        .categoryName(vw.getCategoryName())
+                        .description(vw.getDescription())
+                        .totalLession(vw.getTotalLession())
+                        .totalPart(vw.getTotalPart())
+                        .totalTime(vw.getTotalTime())
+                        .price(vw.getPrice())
+                        .oldPrice(vw.getOldPrice())
+                        .thumbnail(vw.getThumbnail())
+                        .status(1)
+                        .build())
                 .collect(Collectors.toList());
     }
 
@@ -69,23 +81,29 @@ public class CourseService {
     }
 
     public CourseDetailDTO toCourseDetailDTO(Course c) {
-        List<PartOfCourse> parts = partRepository.findByCourseIdOrderByIdAsc(c.getId());
-        List<CourseDetailDTO.PartDTO> partDTOs = parts.stream().map(p -> {
-            List<Lesson> lessons = lessonRepository.findByPartIdOrderByIdAsc(p.getId());
-            List<LessonDTO> lessonDTOs = lessons.stream().map(l -> LessonDTO.builder()
-                    .id(l.getId())
-                    .name(l.getName())
-                    .length(l.getLength())
+        List<VwClientCourseCurriculum> curriculum = courseRepository.getClientCourseCurriculum(c.getId());
+        
+        Map<Integer, CourseDetailDTO.PartDTO> partMap = new LinkedHashMap<>();
+        for (VwClientCourseCurriculum row : curriculum) {
+            Integer partId = row.getPartId();
+            if (partId == null) continue;
+            CourseDetailDTO.PartDTO partDTO = partMap.computeIfAbsent(partId, k -> 
+                CourseDetailDTO.PartDTO.builder()
+                    .id(partId)
+                    .name(row.getPartName())
+                    .lessons(new ArrayList<>())
+                    .build()
+            );
+            if (row.getLessionId() != null) {
+                partDTO.getLessons().add(LessonDTO.builder()
+                    .id(row.getLessionId())
+                    .name(row.getLessionName())
+                    .length(row.getLessionLength())
                     .courseId(c.getId())
-                    .partId(p.getId())
-                    .build())
-                    .collect(Collectors.toList());
-            return CourseDetailDTO.PartDTO.builder()
-                    .id(p.getId())
-                    .name(p.getName())
-                    .lessons(lessonDTOs)
-                    .build();
-        }).collect(Collectors.toList());
+                    .partId(partId)
+                    .build());
+            }
+        }
 
         return CourseDetailDTO.builder()
                 .id(c.getId())
@@ -101,7 +119,7 @@ public class CourseService {
                 .oldPrice(c.getOldPrice())
                 .categoryName(c.getCategory() != null ? c.getCategory().getName() : null)
                 .status(c.getStatus())
-                .parts(partDTOs)
+                .parts(new ArrayList<>(partMap.values()))
                 .build();
     }
 }

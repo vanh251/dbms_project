@@ -45,6 +45,29 @@
         <p class="section-subtitle">Các khóa học bạn đã được cấp quyền truy cập</p>
         <div class="courses-grid" id="myCoursesGrid"></div>
     </section>
+
+    <!-- My Payments -->
+    <section class="section" id="myPaymentsSection" style="display:none">
+        <h2 class="section-title">💳 Lịch sử giao dịch</h2>
+        <div class="table-wrap">
+            <table style="width:100%;text-align:left;border-collapse:collapse">
+                <thead>
+                    <tr style="border-bottom:1px solid #e2e8f0">
+                        <th style="padding:1rem">Mã ĐH</th>
+                        <th style="padding:1rem">Khóa học</th>
+                        <th style="padding:1rem">Số tiền</th>
+                        <th style="padding:1rem">PTTT</th>
+                        <th style="padding:1rem">Trạng thái</th>
+                        <th style="padding:1rem">Mã GD</th>
+                        <th style="padding:1rem">Ngày tạo</th>
+                    </tr>
+                </thead>
+                <tbody id="myPaymentsTable">
+                    <tr><td colspan="7" style="text-align:center;padding:1rem"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 
 <!-- Footer -->
@@ -59,6 +82,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     if (isLoggedIn()) {
         document.getElementById('myCoursesSection').style.display = 'block';
+        document.getElementById('myPaymentsSection').style.display = 'block';
     }
 });
 </script>

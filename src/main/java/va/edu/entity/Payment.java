@@ -2,42 +2,35 @@ package va.edu.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "payments")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class User {
+public class Payment {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, length = 100)
-    private String fullname;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(unique = true, nullable = false, length = 100)
-    private String email;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
+    private Course course;
 
-    @Column(length = 20)
-    private String phone;
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal amount;
 
-    @Column(length = 500)
-    private String avartar;
-
-    @Column(nullable = false, length = 100)
-    private String password;
-
-    @Column(length = 100)
-    private String address;
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
 
     @Column(columnDefinition = "INT DEFAULT 0")
     private Integer status;
 
-    @Column(columnDefinition = "TEXT")
-    private String permission; // comma-separated course IDs
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "group_id")
-    private Group group;
+    @Column(name = "transaction_id", length = 100)
+    private String transactionId;
 
     @Column(name = "create_at")
     private LocalDateTime createAt;

@@ -11,10 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCourses(courseGrid);
     }
 
-    // My courses section
+    // My courses & payments section
     const myCoursesGrid = document.getElementById('myCoursesGrid');
     if (myCoursesGrid && isLoggedIn()) {
         loadMyCourses(myCoursesGrid);
+        loadMyPayments();
     }
 
     // Course detail page
@@ -109,9 +110,18 @@ async function loadCourseDetail(id) {
 
     document.title = course.name + ' | LearnHub';
 
+    const myCourses = isLoggedIn() ? await apiFetch('/api/client/my-courses').catch(()=>[]) : [];
+    const isEnrolled = (myCourses || []).some(c => c.id === course.id);
+
     // Sidebar
     if (sidebarArea) {
         const emoji = ['📚', '🎯', '💻', '🚀', '🎨', '🔬', '🧮', '🌐'][course.id % 8];
+        const btnHtml = isEnrolled 
+            ? `<button class="btn btn-primary btn-block" onclick="switchTab('learn')">🚀 Học ngay</button>`
+            : `<button class="btn btn-primary btn-block" onclick="handleEnroll(${course.id}, '${course.name}', '${course.price}')">
+                ${isLoggedIn() ? '💳 Mua khóa học' : '🔑 Đăng nhập để mua'}
+               </button>`;
+               
         sidebarArea.innerHTML = `
             <div class="thumb">${emoji}</div>
             <div class="price-block">
@@ -124,9 +134,7 @@ async function loadCourseDetail(id) {
                 <div class="stat-item"><div class="stat-value">${course.totalTime || 'N/A'}</div><div class="stat-label">Thời lượng</div></div>
                 <div class="stat-item"><div class="stat-value">🌐</div><div class="stat-label">Online</div></div>
             </div>
-            <button class="btn btn-primary btn-block" onclick="handleEnroll(${course.id})">
-                ${isLoggedIn() ? '🚀 Học ngay' : '🔑 Đăng nhập để học'}
-            </button>
+            ${btnHtml}
         `;
     }
 
@@ -272,12 +280,80 @@ function switchTab(tabName) {
     if (target) target.classList.add('active');
 }
 
-function handleEnroll(courseId) {
+function handleEnroll(courseId, courseName, price) {
     if (!isLoggedIn()) {
         window.location.href = 'login.html';
+        return;
     }
-    // If already has permission, start learning
-    switchTab('learn');
+    openBuyModal(courseId, courseName, price);
+}
+
+// =============================================================
+// PAYMENTS (Client)
+// =============================================================
+function openBuyModal(courseId, courseName, price) {
+    const modal = document.getElementById('buyModalOverlay');
+    const body = document.getElementById('buyModalBody');
+    if (!modal) return;
+    
+    body.innerHTML = `
+        <p style="margin-bottom:1rem">Bạn đang yêu cầu mua khóa học: <strong>${courseName}</strong></p>
+        <p style="margin-bottom:1rem">Số tiền: <strong style="color:#22c55e">${price || 'Miễn phí'}</strong></p>
+        <div class="form-group">
+            <label>Chọn phương thức thanh toán *</label>
+            <select id="pm-method" style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid #e2e8f0;margin-top:0.5rem">
+                <option value="VNPay">Ví VNPay</option>
+                <option value="Momo">Ví Momo</option>
+                <option value="Chuyển khoản ngân hàng">Chuyển khoản ngân hàng</option>
+            </select>
+        </div>
+        <button class="btn btn-primary btn-block" style="margin-top:1.5rem" onclick="submitBuyCourse(${courseId})">Xác nhận tạo đơn</button>
+    `;
+    modal.classList.add('open');
+}
+
+function closeBuyModal() {
+    const modal = document.getElementById('buyModalOverlay');
+    if (modal) modal.classList.remove('open');
+}
+
+async function submitBuyCourse(courseId) {
+    const method = document.getElementById('pm-method').value;
+    const res = await apiFetch(`/api/client/courses/${courseId}/buy`, {
+        method: 'POST',
+        body: JSON.stringify({ paymentMethod: method })
+    });
+    if (res && res.id) {
+        alert('✅ Đã tạo đơn hàng thành công! Vui lòng chờ Admin duyệt.');
+        closeBuyModal();
+        window.location.href = 'index.html';
+    }
+}
+
+async function loadMyPayments() {
+    const tbody = document.getElementById('myPaymentsTable');
+    if (!tbody) return;
+    
+    try {
+        const payments = await apiFetch('/api/client/my-payments');
+        if (!payments || payments.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1rem;color:#64748b">Bạn chưa có giao dịch nào.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = payments.map(p => `
+            <tr style="border-bottom:1px solid #f1f5f9">
+                <td style="padding:1rem">#${p.id}</td>
+                <td style="padding:1rem;font-weight:600">${p.courseName}</td>
+                <td style="padding:1rem;color:#22c55e;font-weight:bold">${p.amount ? p.amount + 'đ' : 'Miễn phí'}</td>
+                <td style="padding:1rem">${p.paymentMethod}</td>
+                <td style="padding:1rem"><span class="badge badge-${p.status === 1 ? 'active' : 'inactive'}">${p.status === 1 ? 'Hoàn thành' : 'Chờ duyệt'}</span></td>
+                <td style="padding:1rem">${p.transactionId || '-'}</td>
+                <td style="padding:1rem">${formatDate(p.createAt)}</td>
+            </tr>
+        `).join('');
+    } catch {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1rem;color:#ef4444">Lỗi khi tải lịch sử giao dịch.</td></tr>';
+    }
 }
 
 function extractYouTubeId(url) {

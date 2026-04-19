@@ -5,18 +5,28 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "TokenLogin")
+@Table(name = "user_lessons", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "lession_id"})
+})
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class TokenLogin {
+public class UserLesson {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(nullable = false, length = 200)
-    private String token;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lession_id")
+    private Lesson lesson;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    @Column(name = "is_completed", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isCompleted;
 
     @Column(name = "create_at")
     private LocalDateTime createAt;
@@ -28,6 +38,7 @@ public class TokenLogin {
     protected void onCreate() {
         createAt = LocalDateTime.now();
         updateAt = LocalDateTime.now();
+        if (isCompleted == null) isCompleted = false;
     }
 
     @PreUpdate

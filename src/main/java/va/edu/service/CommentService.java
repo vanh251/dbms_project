@@ -27,13 +27,9 @@ public class CommentService {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new RuntimeException("Lesson not found"));
 
-        Comment comment = Comment.builder()
-                .user(user)
-                .lesson(lesson)
-                .content(req.getContent())
-                .parentId(req.getParentId())
-                .build();
-        Comment saved = commentRepository.save(comment);
+        commentRepository.addComment(user.getId(), lesson.getId(), req.getParentId(), req.getContent());
+        Comment saved = commentRepository.findTopByUserIdAndLessonIdOrderByCreateAtDesc(user.getId(), lesson.getId())
+                .orElseThrow(() -> new RuntimeException("Failed to retrieve saved comment"));
         return toDTO(saved);
     }
 
