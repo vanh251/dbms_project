@@ -40,6 +40,46 @@ FROM users u
          JOIN "groups" g ON u.group_id = g.id
 WHERE u.status = 1;
 
+--View cho trang "Quản lý khóa học"
+CREATE OR REPLACE VIEW vw_admin_manage_courses AS
+SELECT
+    c.id AS course_id,              -- Cột ID
+    c.name AS course_name,          -- Cột TÊN KHÓA HỌC
+    cc.name AS category_name,       -- Cột DANH MỤC (Lấy từ bảng course_categories)
+    c.price,                        -- Cột GIÁ
+    c.status                        -- Cột TRẠNG THÁI (Backend/Frontend sẽ tự map 1 là Hoạt động)
+FROM courses c
+-- Ghép bảng khóa học với bảng danh mục dựa trên chốt nối là category_id
+         JOIN course_categories cc ON c.category_id = cc.id
+-- Sắp xếp ID tăng dần để giao diện hiển thị từ 1, 2, 3...
+ORDER BY c.id;
+
+-- View cho trang "Quản lý người dùng & phân quyền"
+CREATE OR REPLACE VIEW vw_admin_manage_users AS
+SELECT
+    u.id AS user_id,                -- Cột ID
+    u.fullname,                     -- Cột HỌ TÊN
+    u.email,                        -- Cột EMAIL
+    g.name AS group_name            -- Cột NHÓM (Lấy từ bảng groups)
+FROM users u
+-- Ghép bảng người dùng với bảng nhóm dựa trên chốt nối là group_id
+         JOIN "groups" g ON u.group_id = g.id
+ORDER BY u.id;
+
+-- View cho trang "Danh mục khóa học"
+CREATE OR REPLACE VIEW vw_admin_manage_categories AS
+SELECT
+    cc.id AS category_id,           -- Cột ID
+    cc.name AS category_name,       -- Cột TÊN DANH MỤC
+    -- Đếm xem có bao nhiêu khóa học đang gắn với category_id này
+    COUNT(c.id) AS total_courses
+FROM course_categories cc
+-- Dùng LEFT JOIN để lỡ danh mục nào chưa có khóa học nào thì nó vẫn hiện ra, số lượng = 0
+         LEFT JOIN courses c ON cc.id = c.category_id
+-- Khi dùng hàm đếm COUNT() thì bắt buộc phải GROUP BY các cột còn lại
+GROUP BY cc.id, cc.name
+ORDER BY cc.id;
+
 -- ---------------------------------------------------------
 -- 4. TẠO CÁC BỘ KÍCH HOẠT (TRIGGERS)
 -- ---------------------------------------------------------

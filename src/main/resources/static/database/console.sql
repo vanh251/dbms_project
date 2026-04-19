@@ -93,3 +93,42 @@ CREATE TABLE "comments" (
                             "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                             "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ==============================================================================
+-- 9. Bảng Ghi danh khóa học (Enrollment)
+-- ==============================================================================
+CREATE TABLE "user_courses" (
+    "id" SERIAL PRIMARY KEY,
+    "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
+    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,
+    "progress_percent" INT DEFAULT 0, 
+    "status" INT DEFAULT 1, 
+    "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE("user_id", "course_id")
+);
+
+-- 10. Bảng theo dõi tiến độ từng bài học của học viên
+CREATE TABLE "user_lessons" (
+    "id" SERIAL PRIMARY KEY,
+    "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
+    "lession_id" INT REFERENCES "lessions"("id") ON DELETE CASCADE,
+    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,
+    "is_completed" BOOLEAN DEFAULT FALSE, -- true là đã học xong
+    "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE("user_id", "lession_id") -- Đảm bảo 1 user chỉ có 1 record cho 1 bài học
+);
+
+-- 11. Bảng Thanh toán (Payments)
+CREATE TABLE "payments" (
+    "id" SERIAL PRIMARY KEY,
+    "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
+    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,
+    "amount" DECIMAL(15,2) NOT NULL, 
+    "payment_method" VARCHAR(50),      
+    "status" INT DEFAULT 0,            
+    "transaction_id" VARCHAR(100),     
+    "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
