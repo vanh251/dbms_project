@@ -1,14 +1,24 @@
 package va.edu.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import va.edu.entity.UserCourse;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserCourseRepository extends JpaRepository<UserCourse, Integer> {
+
     Optional<UserCourse> findByUserIdAndCourseId(Integer userId, Integer courseId);
+
+    boolean existsByUserIdAndCourseId(Integer userId, Integer courseId);
+
+    /** Trả về danh sách course_id mà user đã được ghi danh */
+    @Query("SELECT uc.course.id FROM UserCourse uc WHERE uc.user.id = :userId")
+    List<Integer> findCourseIdsByUserId(@Param("userId") Integer userId);
 
     @Procedure(procedureName = "sp_enroll_course")
     void enrollCourse(Integer p_user_id, Integer p_course_id);

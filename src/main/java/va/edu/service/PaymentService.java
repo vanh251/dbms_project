@@ -75,21 +75,9 @@ public class PaymentService {
         User user = payment.getUser();
         Course course = payment.getCourse();
 
-        // 1. Update user permissions (comma separated string)
-        String currentPerms = user.getPermission();
-        if (currentPerms == null || currentPerms.trim().isEmpty()) {
-            user.setPermission(String.valueOf(course.getId()));
-        } else {
-            List<String> permList = new java.util.ArrayList<>(java.util.Arrays.asList(currentPerms.split(",")));
-            if (!permList.contains(String.valueOf(course.getId()))) {
-                permList.add(String.valueOf(course.getId()));
-                user.setPermission(String.join(",", permList));
-            }
-        }
-        userRepository.save(user);
-
-        // 2. Enroll user in course
-        boolean alreadyEnrolled = userCourseRepository.findByUserIdAndCourseId(user.getId(), course.getId()).isPresent();
+        // Ghi danh user vào bảng user_courses (nguon chân lý duy nhất về quyền)
+        boolean alreadyEnrolled = userCourseRepository
+                .existsByUserIdAndCourseId(user.getId(), course.getId());
         if (!alreadyEnrolled) {
             va.edu.entity.UserCourse uc = va.edu.entity.UserCourse.builder()
                     .user(user)

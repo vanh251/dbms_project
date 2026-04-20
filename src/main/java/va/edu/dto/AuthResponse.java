@@ -9,5 +9,4 @@ public class AuthResponse {
     private String fullname;
     private String email;
     private Integer groupId;   // 1 = admin
-    private String permission; // comma-separated course IDs
 }

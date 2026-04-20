@@ -32,8 +32,6 @@ public class User {
     @Column(columnDefinition = "INT DEFAULT 0")
     private Integer status;
 
-    @Column(columnDefinition = "TEXT")
-    private String permission; // comma-separated course IDs
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "group_id")

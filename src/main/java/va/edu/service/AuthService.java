@@ -45,7 +45,6 @@ public class AuthService {
                 .fullname(user.getFullname())
                 .email(user.getEmail())
                 .groupId(group.getId())
-                .permission(user.getPermission())
                 .build();
     }
 
@@ -66,7 +65,6 @@ public class AuthService {
                 .fullname(user.getFullname())
                 .email(user.getEmail())
                 .groupId(groupId)
-                .permission(user.getPermission())
                 .build();
     }
 }

@@ -11,7 +11,6 @@ public class UserDTO {
     private String avartar;
     private String address;
     private Integer status;
-    private String permission;
     private Integer groupId;
     private String groupName;
 }

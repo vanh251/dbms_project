@@ -16,6 +16,7 @@ public class CourseService {
     private final PartOfCourseRepository partRepository;
     private final LessonRepository lessonRepository;
     private final UserRepository userRepository;
+    private final UserCourseRepository userCourseRepository;
 
     public List<CourseDTO> getActiveCourses() {
         return courseRepository.getClientCourseCards().stream()
@@ -50,14 +51,9 @@ public class CourseService {
     public List<CourseDTO> getMyCourses(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        if (user.getPermission() == null || user.getPermission().isBlank()) {
-            return Collections.emptyList();
-        }
-        List<Integer> ids = Arrays.stream(user.getPermission().split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
+        // Lấy danh sách course_id mà user đã gđk danh từ bảng user_courses
+        List<Integer> ids = userCourseRepository.findCourseIdsByUserId(user.getId());
+        if (ids.isEmpty()) return Collections.emptyList();
         return courseRepository.findAllById(ids).stream()
                 .map(this::toCourseDTO)
                 .collect(Collectors.toList());

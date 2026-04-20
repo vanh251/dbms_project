@@ -14,6 +14,7 @@ public class LessonService {
 
     private final LessonRepository lessonRepository;
     private final UserRepository userRepository;
+    private final UserCourseRepository userCourseRepository;
 
     public LessonDTO getLesson(Integer lessonId, String email) {
         Lesson lesson = lessonRepository.findById(lessonId)
@@ -23,13 +24,10 @@ public class LessonService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         boolean isAdmin = user.getGroup() != null && user.getGroup().getId() == 1;
-        boolean hasPermission = false;
 
-        if (!isAdmin && user.getPermission() != null && !user.getPermission().isBlank()) {
-            String courseIdStr = String.valueOf(lesson.getCourse().getId());
-            hasPermission = Arrays.asList(user.getPermission().split(","))
-                    .stream().map(String::trim).anyMatch(s -> s.equals(courseIdStr));
-        }
+        // Kiểm tra quyền: chỉ cần tồn tại bản ghi trong user_courses
+        boolean hasPermission = userCourseRepository
+                .existsByUserIdAndCourseId(user.getId(), lesson.getCourse().getId());
 
         return LessonDTO.builder()
                 .id(lesson.getId())

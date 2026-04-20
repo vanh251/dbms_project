@@ -1,8 +1,8 @@
--- 1. Bảng Nhóm tài khoản (Phải tạo trước để users tham chiếu tới)
+-- 1. Bảng Nhóm tài khoản
 CREATE TABLE "groups" (
-                          "id" SERIAL PRIMARY KEY, -- SERIAL tự động tăng trong Postgres
+                          "id" SERIAL PRIMARY KEY,
                           "name" VARCHAR(50) NOT NULL,
-                          "permission" TEXT, -- Quyền của dạng tài khoản
+                          "permission" TEXT,
                           "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -13,12 +13,11 @@ CREATE TABLE "users" (
                          "fullname" VARCHAR(100) NOT NULL,
                          "email" VARCHAR(100) UNIQUE NOT NULL,
                          "phone" VARCHAR(20),
-                         "avartar" VARCHAR(500), -- Linh giữ nguyên chính tả 'avartar' như trong ảnh nhé
+                         "avartar" VARCHAR(500),
                          "password" VARCHAR(100) NOT NULL,
                          "address" VARCHAR(100),
-                         "status" INT DEFAULT 0, -- 0: chưa kích hoạt, 1: kích hoạt
-                         "permission" TEXT, -- Quyền truy cập khóa học riêng của tài khoản này
-                         "group_id" INT REFERENCES "groups"("id"), -- Liên kết với bảng group
+                         "status" INT DEFAULT 0,
+                         "group_id" INT REFERENCES "groups"("id"),
                          "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                          "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -35,7 +34,7 @@ CREATE TABLE "course_categories" (
 CREATE TABLE "courses" (
                            "id" SERIAL PRIMARY KEY,
                            "name" VARCHAR(100) NOT NULL,
-                           "slug" VARCHAR(100) UNIQUE, -- Đường dẫn thân thiện
+                           "slug" VARCHAR(100) UNIQUE,
                            "thumbnail" VARCHAR(100),
                            "description" VARCHAR(200),
                            "total_lession" INT DEFAULT 0,
@@ -45,12 +44,12 @@ CREATE TABLE "courses" (
                            "price" VARCHAR(50),
                            "old_price" VARCHAR(50),
                            "category_id" INT REFERENCES "course_categories"("id"),
-                           "status" INT DEFAULT 0, -- 0: chưa ra mắt, 1: đã ra mắt
+                           "status" INT DEFAULT 0,
                            "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                            "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 5. Bảng Các phần của khóa học (Chương)
+-- 5. Bảng Các phần của khóa học
 CREATE TABLE "part_of_courses" (
                                    "id" SERIAL PRIMARY KEY,
                                    "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,
@@ -67,7 +66,7 @@ CREATE TABLE "lessions" (
                             "part_id" INT REFERENCES "part_of_courses"("id") ON DELETE CASCADE,
                             "length" VARCHAR(50),
                             "description" TEXT,
-                            "value" TEXT, -- Nội dung bài học (video link hoặc text)
+                            "value" TEXT,
                             "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                             "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -76,16 +75,14 @@ CREATE TABLE "lessions" (
 CREATE TABLE "comments" (
                             "id" SERIAL PRIMARY KEY,
                             "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
-                            "parent_id" INT, -- Dùng để reply bình luận (nếu null là cmt gốc)
+                            "parent_id" INT,
                             "lession_id" INT REFERENCES "lessions"("id") ON DELETE CASCADE,
                             "content" TEXT NOT NULL,
                             "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                             "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ==============================================================================
--- 8. Bảng Ghi danh khóa học (Enrollment)
--- ==============================================================================
+-- 8. Bảng Ghi danh khóa học
 CREATE TABLE "user_courses" (
     "id" SERIAL PRIMARY KEY,
     "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
@@ -103,13 +100,13 @@ CREATE TABLE "user_lessons" (
     "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,
     "lession_id" INT REFERENCES "lessions"("id") ON DELETE CASCADE,
     "course_id" INT REFERENCES "courses"("id") ON DELETE CASCADE,
-    "is_completed" BOOLEAN DEFAULT FALSE, -- true là đã học xong
+    "is_completed" BOOLEAN DEFAULT FALSE,
     "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE("user_id", "lession_id") -- Đảm bảo 1 user chỉ có 1 record cho 1 bài học
+    UNIQUE("user_id", "lession_id")
 );
 
--- 10. Bảng Thanh toán (Payments)
+-- 10. Bảng Thanh toán
 CREATE TABLE "payments" (
     "id" SERIAL PRIMARY KEY,
     "user_id" INT REFERENCES "users"("id") ON DELETE CASCADE,

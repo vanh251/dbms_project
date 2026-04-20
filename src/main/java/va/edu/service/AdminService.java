@@ -17,6 +17,7 @@ public class AdminService {
     private final PartOfCourseRepository partRepository;
     private final LessonRepository lessonRepository;
     private final UserRepository userRepository;
+    private final UserCourseRepository userCourseRepository;
 
     // --- COURSE CRUD ---
     public List<CourseDTO> getAllCourses() {
@@ -117,11 +118,35 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Cấp quyền: ghi danh user vào từng course trong danh sách courseIds (cách nhau bằng dấu phẩy).
+     * Đây là nguồn chân lý duy nhất – không còn dùng cột permission trên bảng users.
+     */
     public UserDTO grantPermission(Integer userId, String courseIds) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setPermission(courseIds);
-        userRepository.save(user);
+
+        if (courseIds != null && !courseIds.isBlank()) {
+            java.util.Arrays.stream(courseIds.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Integer::parseInt)
+                    .forEach(courseId -> {
+                        if (!userCourseRepository.existsByUserIdAndCourseId(userId, courseId)) {
+                            courseRepository.findById(courseId).ifPresent(course -> {
+                                va.edu.entity.UserCourse uc = va.edu.entity.UserCourse.builder()
+                                        .user(user)
+                                        .course(course)
+                                        .status(1)
+                                        .progressPercent(0)
+                                        .createAt(java.time.LocalDateTime.now())
+                                        .updateAt(java.time.LocalDateTime.now())
+                                        .build();
+                                userCourseRepository.save(uc);
+                            });
+                        }
+                    });
+        }
         return toUserDTO(user);
     }
 
@@ -164,7 +189,7 @@ public class AdminService {
         return UserDTO.builder()
                 .id(u.getId()).fullname(u.getFullname()).email(u.getEmail())
                 .phone(u.getPhone()).avartar(u.getAvartar()).address(u.getAddress())
-                .status(u.getStatus()).permission(u.getPermission())
+                .status(u.getStatus())
                 .groupId(u.getGroup() != null ? u.getGroup().getId() : null)
                 .groupName(u.getGroup() != null ? u.getGroup().getName() : null)
                 .build();
