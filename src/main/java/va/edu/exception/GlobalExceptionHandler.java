@@ -6,7 +6,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-import va.edu.dto.ApiResponse;
+import va.edu.dto.response.ApiResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 

@@ -4,7 +4,7 @@ package va.edu.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import va.edu.dto.PaymentDTO;
-import va.edu.dto.PaymentRequest;
+import va.edu.dto.request.PaymentRequest;
 import va.edu.entity.Course;
 import va.edu.entity.Payment;
 import va.edu.entity.User;

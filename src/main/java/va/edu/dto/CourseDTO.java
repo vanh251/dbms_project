@@ -9,11 +9,13 @@ public class CourseDTO {
     private String slug;
     private String thumbnail;
     private String description;
+    private String require;
     private Integer totalLession;
     private Integer totalPart;
     private String totalTime;
     private String price;
     private String oldPrice;
+    private Integer categoryId;
     private String categoryName;
     private Integer status;
 }

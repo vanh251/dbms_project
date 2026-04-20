@@ -14,6 +14,43 @@ VALUES (p_fullname, p_email, p_password, p_phone, p_address, 0, p_active_token,
 END;
 $$;
 
+-- 11. sp_delete_course
+-- Xóa hoàn toàn một khóa học và toàn bộ dữ liệu liên quan theo đúng thứ tự phụ thuộc
+CREATE OR REPLACE PROCEDURE sp_delete_course(p_course_id INT) LANGUAGE plpgsql AS $$
+DECLARE
+    v_exists INT;
+BEGIN
+    -- Kiểm tra khóa học có tồn tại không
+    SELECT COUNT(*) INTO v_exists FROM "courses" WHERE id = p_course_id;
+    IF v_exists = 0 THEN
+        RAISE EXCEPTION 'Khóa học với ID % không tồn tại!', p_course_id;
+    END IF;
+
+    -- 1. Xóa tiến độ bài học của học viên (tham chiếu đến lessions & courses)
+    DELETE FROM "user_lessons" WHERE course_id = p_course_id;
+
+    -- 2. Xóa bình luận (tham chiếu đến lessions)
+    DELETE FROM "comments"
+    WHERE lession_id IN (SELECT id FROM "lessions" WHERE course_id = p_course_id);
+
+    -- 3. Xóa các bài học
+    DELETE FROM "lessions" WHERE course_id = p_course_id;
+
+    -- 4. Xóa ghi danh khóa học
+    DELETE FROM "user_courses" WHERE course_id = p_course_id;
+
+    -- 5. Xóa lịch sử thanh toán liên quan
+    DELETE FROM "payments" WHERE course_id = p_course_id;
+
+    -- 6. Xóa các chương (part_of_courses)
+    DELETE FROM "part_of_courses" WHERE course_id = p_course_id;
+
+    -- 7. Xóa chính khóa học
+    DELETE FROM "courses" WHERE id = p_course_id;
+
+    RAISE NOTICE 'Đã xóa thành công khóa học ID: %', p_course_id;
+END;
+$$;
 
 
 -- 4. sp_create_course

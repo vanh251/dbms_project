@@ -35,11 +35,20 @@ ORDER BY p.id ASC, l.id ASC;
 --3. View cho trang "Quản lý khóa học"
 CREATE OR REPLACE VIEW vw_admin_manage_courses AS
 SELECT
-    c.id AS course_id,
-    c.name AS course_name,
-    cc.name AS category_name,
+    c.id          AS course_id,
+    c.name        AS course_name,
+    c.slug,
+    c.thumbnail,
+    c.description,
+    c.require,
+    c.total_lession,
+    c.total_part,
+    c.total_time,
     c.price,
-    c.status
+    c.old_price,
+    c.status,
+    c.category_id,
+    cc.name       AS category_name
 FROM courses c
          JOIN course_categories cc ON c.category_id = cc.id
 ORDER BY c.id;

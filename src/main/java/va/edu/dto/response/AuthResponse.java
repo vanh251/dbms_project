@@ -1,4 +1,4 @@
-package va.edu.dto;
+package va.edu.dto.response;
 
 import lombok.*;
 

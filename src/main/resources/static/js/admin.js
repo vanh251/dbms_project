@@ -102,17 +102,26 @@ async function submitCreateCourse() {
         categoryId: document.getElementById('fc-cat').value ? parseInt(document.getElementById('fc-cat').value) : null
     };
     if (!body.name) { showToast('Tên khóa học không được để trống', 'warning'); return; }
-    await apiFetch('/api/admin/courses', { method: 'POST', body: JSON.stringify(body) });
-    closeModal();
-    loadAdminCourses();
+    try {
+        await apiFetch('/api/admin/courses', { method: 'POST', body: JSON.stringify(body) });
+        showToast('Tạo khóa học thành công!', 'success');
+        closeModal();
+        loadAdminCourses();
+    } catch (err) {
+        showToast(err.message || 'Lỗi khi tạo khóa học', 'error');
+    }
 }
 
 async function openEditCourse(id) {
-    const courses = await apiFetch('/api/admin/courses');
+    const [courses, cats] = await Promise.all([
+        apiFetch('/api/admin/courses'),
+        apiFetch('/api/admin/categories')
+    ]);
     const course = (courses || []).find(c => c.id === id);
-    const cats = await apiFetch('/api/admin/categories');
-    const catOptions = (cats || []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-    if (!course) return;
+    if (!course) { showToast('Không tìm thấy khóa học', 'error'); return; }
+    const catOptions = (cats || []).map(c =>
+        `<option value="${c.id}" ${course.categoryId == c.id ? 'selected' : ''}>${c.name}</option>`
+    ).join('');
     showModal(`Sửa khóa học #${id}`, `
         <div class="form-group"><label>Tên khóa học *</label><input id="ec-name" value="${course.name || ''}"></div>
         <div class="form-group"><label>Slug</label><input id="ec-slug" value="${course.slug || ''}"></div>
@@ -156,9 +165,15 @@ async function submitEditCourse(id) {
         status: parseInt(document.getElementById('ec-status').value),
         categoryId: document.getElementById('ec-cat').value ? parseInt(document.getElementById('ec-cat').value) : null
     };
-    await apiFetch(`/api/admin/courses/${id}`, { method: 'PUT', body: JSON.stringify(body) });
-    closeModal();
-    loadAdminCourses();
+    if (!body.name) { showToast('Tên khóa học không được để trống', 'warning'); return; }
+    try {
+        await apiFetch(`/api/admin/courses/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+        showToast('Cập nhật khóa học thành công!', 'success');
+        closeModal();
+        loadAdminCourses();
+    } catch (err) {
+        showToast(err.message || 'Lỗi khi lưu khóa học', 'error');
+    }
 }
 
 async function deleteCourse(id, name) {
@@ -172,9 +187,14 @@ async function deleteCourse(id, name) {
 }
 
 async function submitDeleteCourse(id) {
-    await apiFetch(`/api/admin/courses/${id}`, { method: 'DELETE' });
-    closeModal();
-    loadAdminCourses();
+    try {
+        await apiFetch(`/api/admin/courses/${id}`, { method: 'DELETE' });
+        showToast('Đã xóa khóa học thành công!', 'success');
+        closeModal();
+        loadAdminCourses();
+    } catch (err) {
+        showToast(err.message || 'Lỗi khi xóa khóa học', 'error');
+    }
 }
 
 // --- Part / Chapter ---

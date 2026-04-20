@@ -4,7 +4,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import va.edu.dto.*;
+import va.edu.dto.request.AuthRequest;
+import va.edu.dto.request.RegisterRequest;
+import va.edu.dto.response.ApiResponse;
+import va.edu.dto.response.AuthResponse;
 import va.edu.service.AuthService;
 
 @RestController

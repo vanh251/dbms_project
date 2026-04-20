@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import va.edu.dto.*;
+import va.edu.dto.request.CourseRequest;
+import va.edu.dto.response.ApiResponse;
 import va.edu.service.AdminService;
 import java.util.*;
 
@@ -65,7 +67,8 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(adminService.getAllUsers()));
     }
 
-    // Xem danh sách khóa học mà user đã được ghi danh (chỉ xem, không phân quyền thủ công)
+    // Xem danh sách khóa học mà user đã được ghi danh (chỉ xem, không phân quyền
+    // thủ công)
     @GetMapping("/users/{userId}/courses")
     public ResponseEntity<ApiResponse<List<CourseDTO>>> getUserCourses(@PathVariable Integer userId) {
         return ResponseEntity.ok(ApiResponse.success(adminService.getUserCourses(userId)));
@@ -100,6 +103,7 @@ public class AdminController {
 
     @PostMapping("/payments/{id}/confirm")
     public ResponseEntity<ApiResponse<PaymentDTO>> confirmPayment(@PathVariable Integer id) {
-        return ResponseEntity.ok(ApiResponse.success("Xác nhận thanh toán thành công", paymentService.confirmPayment(id)));
+        return ResponseEntity
+                .ok(ApiResponse.success("Xác nhận thanh toán thành công", paymentService.confirmPayment(id)));
     }
 }

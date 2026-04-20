@@ -33,4 +33,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
 
     @Procedure(procedureName = "sp_transaction_cancel_course_and_refund")
     void cancelCourseAndRefund(Integer p_course_id);
+
+    @Procedure(procedureName = "sp_delete_course")
+    void deleteCourse(Integer p_course_id);
 }

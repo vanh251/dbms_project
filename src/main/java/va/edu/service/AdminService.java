@@ -3,6 +3,7 @@ package va.edu.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import va.edu.dto.*;
+import va.edu.dto.request.CourseRequest;
 import va.edu.entity.*;
 import va.edu.repository.*;
 import java.util.*;
@@ -25,8 +26,17 @@ public class AdminService {
                 .map(vw -> CourseDTO.builder()
                         .id(vw.getCourseId())
                         .name(vw.getCourseName())
-                        .categoryName(vw.getCategoryName())
+                        .slug(vw.getSlug())
+                        .thumbnail(vw.getThumbnail())
+                        .description(vw.getDescription())
+                        .require(vw.getRequire())
+                        .totalLession(vw.getTotalLession())
+                        .totalPart(vw.getTotalPart())
+                        .totalTime(vw.getTotalTime())
                         .price(vw.getPrice())
+                        .oldPrice(vw.getOldPrice())
+                        .categoryId(vw.getCategoryId())
+                        .categoryName(vw.getCategoryName())
                         .status(vw.getStatus())
                         .build())
                 .collect(Collectors.toList());
@@ -34,7 +44,8 @@ public class AdminService {
 
     public CourseDTO createCourse(CourseRequest req) {
         CourseCategory category = req.getCategoryId() != null
-                ? categoryRepository.findById(req.getCategoryId()).orElse(null) : null;
+                ? categoryRepository.findById(req.getCategoryId()).orElse(null)
+                : null;
 
         Course course = Course.builder()
                 .name(req.getName())
@@ -56,7 +67,8 @@ public class AdminService {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         CourseCategory category = req.getCategoryId() != null
-                ? categoryRepository.findById(req.getCategoryId()).orElse(null) : null;
+                ? categoryRepository.findById(req.getCategoryId()).orElse(null)
+                : null;
 
         course.setName(req.getName());
         course.setSlug(req.getSlug());
@@ -67,13 +79,14 @@ public class AdminService {
         course.setPrice(req.getPrice());
         course.setOldPrice(req.getOldPrice());
         course.setCategory(category);
-        if (req.getStatus() != null) course.setStatus(req.getStatus());
+        if (req.getStatus() != null)
+            course.setStatus(req.getStatus());
         courseRepository.save(course);
         return toCourseDTO(course);
     }
 
     public void deleteCourse(Integer id) {
-        courseRepository.deleteById(id);
+        courseRepository.deleteCourse(id);
     }
 
     // --- PART CRUD ---
@@ -83,7 +96,8 @@ public class AdminService {
         PartOfCourse part = PartOfCourse.builder().course(course).name(name).build();
         PartOfCourse saved = partRepository.save(part);
         // course.setTotalPart(course.getTotalPart() + 1);
-        // courseRepository.save(course); // Bỏ qua vì đã có Trigger fn_update_total_part
+        // courseRepository.save(course); // Bỏ qua vì đã có Trigger
+        // fn_update_total_part
         return Map.of("id", saved.getId(), "name", saved.getName());
     }
 
@@ -102,7 +116,8 @@ public class AdminService {
         Lesson saved = lessonRepository.save(lesson);
         // Course course = part.getCourse();
         // course.setTotalLession(course.getTotalLession() + 1);
-        // courseRepository.save(course); // Bỏ qua vì đã có Trigger fn_update_total_lession
+        // courseRepository.save(course); // Bỏ qua vì đã có Trigger
+        // fn_update_total_lession
         return toLessonDTO(saved);
     }
 
@@ -118,18 +133,24 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    /** Trả về danh sách khóa học mà user đã ghi danh (để admin xem, không cần phân quyền thủ công) */
+    /**
+     * Trả về danh sách khóa học mà user đã ghi danh (để admin xem, không cần phân
+     * quyền thủ công)
+     */
     public List<CourseDTO> getUserCourses(Integer userId) {
         List<Integer> courseIds = userCourseRepository.findCourseIdsByUserId(userId);
-        if (courseIds.isEmpty()) return Collections.emptyList();
+        if (courseIds.isEmpty())
+            return Collections.emptyList();
         return courseRepository.findAllById(courseIds).stream()
                 .map(this::toCourseDTO)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Cấp quyền: ghi danh user vào từng course trong danh sách courseIds (cách nhau bằng dấu phẩy).
-     * Đây là nguồn chân lý duy nhất – không còn dùng cột permission trên bảng users.
+     * Cấp quyền: ghi danh user vào từng course trong danh sách courseIds (cách nhau
+     * bằng dấu phẩy).
+     * Đây là nguồn chân lý duy nhất – không còn dùng cột permission trên bảng
+     * users.
      */
     public UserDTO grantPermission(Integer userId, String courseIds) {
         User user = userRepository.findById(userId)
