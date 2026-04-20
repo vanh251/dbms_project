@@ -82,26 +82,25 @@ public class CourseService {
 
     public CourseDetailDTO toCourseDetailDTO(Course c) {
         List<VwClientCourseCurriculum> curriculum = courseRepository.getClientCourseCurriculum(c.getId());
-        
+
         Map<Integer, CourseDetailDTO.PartDTO> partMap = new LinkedHashMap<>();
         for (VwClientCourseCurriculum row : curriculum) {
             Integer partId = row.getPartId();
-            if (partId == null) continue;
-            CourseDetailDTO.PartDTO partDTO = partMap.computeIfAbsent(partId, k -> 
-                CourseDetailDTO.PartDTO.builder()
+            if (partId == null)
+                continue;
+            CourseDetailDTO.PartDTO partDTO = partMap.computeIfAbsent(partId, k -> CourseDetailDTO.PartDTO.builder()
                     .id(partId)
                     .name(row.getPartName())
                     .lessons(new ArrayList<>())
-                    .build()
-            );
+                    .build());
             if (row.getLessionId() != null) {
                 partDTO.getLessons().add(LessonDTO.builder()
-                    .id(row.getLessionId())
-                    .name(row.getLessionName())
-                    .length(row.getLessionLength())
-                    .courseId(c.getId())
-                    .partId(partId)
-                    .build());
+                        .id(row.getLessionId())
+                        .name(row.getLessionName())
+                        .length(row.getLessionLength())
+                        .courseId(c.getId())
+                        .partId(partId)
+                        .build());
             }
         }
 

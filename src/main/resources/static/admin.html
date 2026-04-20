@@ -11,9 +11,9 @@
 
 <!-- Admin Navbar -->
 <nav class="navbar">
-    <a class="logo" href="index.html">Learn<span>Hub</span> <span style="font-size:0.75rem;background:#4f46e5;color:#fff;padding:2px 8px;border-radius:12px;margin-left:6px">Admin</span></a>
-    <div class="nav-links">
-        <span style="color:#64748b;font-size:0.9rem">👤 <span id="adminUsername"></span></span>
+    <a class="logo" href="index.html">Learn<span>Hub</span> <span style="font-size:0.7rem;background:#2563eb;color:#fff;padding:2px 8px;border-radius:10px;margin-left:6px;font-weight:700;letter-spacing:0.3px">ADMIN</span></a>
+    <div id="navAuth">
+        <span style="color:#64748b;font-size:0.88rem" id="adminUsername"></span>
         <a href="index.html" class="btn btn-sm btn-outline hide-mobile">Xem site</a>
         <button class="btn btn-sm btn-danger" onclick="logout()">Đăng xuất</button>
     </div>
@@ -24,12 +24,12 @@
 
     <!-- Sidebar -->
     <aside class="admin-sidebar">
-        <div class="sidebar-logo">⚙️ Quản trị</div>
+        <div class="sidebar-logo">Quản trị hệ thống</div>
         <nav class="sidebar-nav">
-            <a data-section="courses" onclick="showSection('courses')">📚 Khóa học</a>
-            <a data-section="users" onclick="showSection('users')">👥 Người dùng</a>
-            <a data-section="categories" onclick="showSection('categories')">📂 Danh mục</a>
-            <a data-section="payments" onclick="showSection('payments')">💳 Thanh toán</a>
+            <a data-section="courses" onclick="showSection('courses')">Khóa học</a>
+            <a data-section="users" onclick="showSection('users')">Người dùng</a>
+            <a data-section="categories" onclick="showSection('categories')">Danh mục</a>
+            <a data-section="payments" onclick="showSection('payments')">Thanh toán</a>
         </nav>
     </aside>
 
@@ -39,8 +39,8 @@
         <!-- COURSES SECTION -->
         <div id="section-courses" class="admin-section">
             <div class="admin-header">
-                <h2>📚 Quản lý khóa học</h2>
-                <button class="btn btn-primary" onclick="openCreateCourse()">➕ Thêm khóa học</button>
+                <h2>Quản lý khóa học</h2>
+                <button class="btn btn-primary" onclick="openCreateCourse()">Thêm khóa học</button>
             </div>
             <div class="table-wrap">
                 <table>
@@ -64,8 +64,8 @@
         <!-- USERS SECTION -->
         <div id="section-users" class="admin-section">
             <div class="admin-header">
-                <h2>👥 Quản lý người dùng & phân quyền</h2>
-                <button class="btn btn-primary" onclick="loadAdminUsers()">🔄 Làm mới</button>
+                <h2>Quản lý người dùng &amp; phân quyền</h2>
+                <button class="btn btn-primary" onclick="loadAdminUsers()">Làm mới</button>
             </div>
             <div class="table-wrap">
                 <table>
@@ -88,10 +88,10 @@
         <!-- CATEGORIES SECTION -->
         <div id="section-categories" class="admin-section">
             <div class="admin-header">
-                <h2>📂 Danh mục khóa học</h2>
-                <div>
-                    <button class="btn btn-primary" onclick="openCreateCategory()">➕ Thêm danh mục</button>
-                    <button class="btn btn-secondary" onclick="loadAdminCategories()">🔄 Làm mới</button>
+                <h2>Danh mục khóa học</h2>
+                <div style="display:flex;gap:0.5rem">
+                    <button class="btn btn-primary" onclick="openCreateCategory()">Thêm danh mục</button>
+                    <button class="btn btn-secondary" onclick="loadAdminCategories()">Làm mới</button>
                 </div>
             </div>
             <div class="table-wrap">
@@ -112,8 +112,8 @@
         <!-- PAYMENTS SECTION -->
         <div id="section-payments" class="admin-section">
             <div class="admin-header">
-                <h2>💳 Quản lý thanh toán</h2>
-                <button class="btn btn-secondary" onclick="loadAdminPayments()">🔄 Làm mới</button>
+                <h2>Quản lý thanh toán</h2>
+                <button class="btn btn-secondary" onclick="loadAdminPayments()">Làm mới</button>
             </div>
             <div class="table-wrap">
                 <table>
@@ -123,7 +123,7 @@
                         <th>Khách hàng</th>
                         <th>Khóa học</th>
                         <th>Số tiền</th>
-                        <th>PTTT</th>
+                        <th>Phương thức</th>
                         <th>Trạng thái</th>
                         <th>Hành động</th>
                     </tr>
@@ -143,7 +143,7 @@
     <div class="modal">
         <div class="modal-header">
             <h3 id="modalTitle">Modal</h3>
-            <button class="modal-close" onclick="closeModal()">✕</button>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
         <div id="modalBody"></div>
     </div>

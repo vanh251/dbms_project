@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử giao dịch – LearnHub</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+    <a class="logo" href="index.html">Learn<span>Hub</span></a>
+    <div class="nav-links">
+        <a href="index.html" class="hide-mobile">Trang chủ</a>
+        <a href="courses.html" class="hide-mobile">Khóa học</a>
+        </div>
+    <div id="navAuth"></div>
+</nav>
+
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem; min-height: 70vh;">
+    <section class="section" id="myPaymentsSection">
+        <div class="section-header">
+            <h2 class="section-title">Lịch sử giao dịch</h2>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã đơn hàng</th>
+                        <th>Khóa học</th>
+                        <th>Số tiền</th>
+                        <th>Phương thức</th>
+                        <th>Trạng thái</th>
+                        <th>Mã giao dịch</th>
+                        <th>Ngày tạo</th>
+                    </tr>
+                </thead>
+                <tbody id="myPaymentsTable">
+                    <tr><td colspan="7" style="text-align:center;padding:2rem"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<footer class="footer">
+    <div class="footer-brand">Learn<span>Hub</span></div>
+    <p>Nền tảng học trực tuyến chất lượng cao &bull; &copy; 2026 LearnHub</p>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+    if (!isLoggedIn()) window.location.href = 'login.html';
+</script>
+</body>
+</html>
+

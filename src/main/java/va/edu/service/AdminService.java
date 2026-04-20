@@ -20,14 +20,8 @@ public class AdminService {
 
     // --- COURSE CRUD ---
     public List<CourseDTO> getAllCourses() {
-        return courseRepository.getAdminManageCourses().stream()
-                .map(vw -> CourseDTO.builder()
-                        .id(vw.getCourseId())
-                        .name(vw.getCourseName())
-                        .categoryName(vw.getCategoryName())
-                        .price(vw.getPrice())
-                        .status(vw.getStatus())
-                        .build())
+        return courseRepository.findAll().stream()
+                .map(this::toCourseDTO)
                 .collect(Collectors.toList());
     }
 

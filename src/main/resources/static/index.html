@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="LearnHub – Nền tảng học trực tuyến hàng đầu với hàng trăm khóa học chất lượng cao">
-    <title>LearnHub – Học trực tuyến</title>
+    <title>LearnHub – Học trực tuyến chất lượng cao</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -13,78 +13,78 @@
 <nav class="navbar">
     <a class="logo" href="index.html">Learn<span>Hub</span></a>
     <div class="nav-links">
-        <a href="index.html" class="hide-mobile">Trang chủ</a>
-        <div id="navAuth"></div>
-    </div>
+        <a href="index.html" class="hide-mobile" style="font-weight:600;color:var(--primary)">Trang chủ</a>
+        <a href="courses.html" class="hide-mobile">Khóa học</a>
+        </div>
+    <div id="navAuth"></div>
 </nav>
 
 <!-- Hero -->
 <section class="hero">
+    <div class="hero-badge">Nền tảng học trực tuyến #1 Việt Nam</div>
     <h1>Học bất cứ điều gì,<br>bất cứ lúc nào</h1>
     <p>Hàng trăm khóa học chất lượng cao từ các chuyên gia hàng đầu. Bắt đầu hành trình học tập của bạn ngay hôm nay!</p>
     <div class="hero-actions">
-        <a href="register.html" class="btn btn-secondary">🚀 Đăng ký miễn phí</a>
-        <a href="#courses" class="btn btn-outline" style="color:#fff;border-color:#fff">Khám phá khóa học</a>
+        <a href="register.html" class="btn btn-secondary btn-lg">Đăng ký miễn phí</a>
+        <a href="courses.html" class="btn btn-outline btn-lg">Khám phá khóa học</a>
+    </div>
+    <div class="hero-stats">
+        <div class="stat">
+            <div class="stat-num">500+</div>
+            <div class="stat-lbl">Khóa học</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">50K+</div>
+            <div class="stat-lbl">Học viên</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">200+</div>
+            <div class="stat-lbl">Giảng viên</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">98%</div>
+            <div class="stat-lbl">Hài lòng</div>
+        </div>
     </div>
 </section>
 
-<!-- Course List -->
-<div class="container">
-    <!-- All Courses -->
-    <section class="section" id="courses">
-        <h2 class="section-title">📚 Tất cả khóa học</h2>
-        <p class="section-subtitle">Khám phá thư viện khóa học đa dạng của chúng tôi</p>
-        <div class="courses-grid" id="courseGrid">
-            <!-- Loaded by main.js -->
+<!-- Features Strip -->
+<div class="features-strip">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-item">
+                <h4>Học mọi lúc, mọi nơi</h4>
+                <p>Truy cập khóa học trên mọi thiết bị, không giới hạn thời gian.</p>
+            </div>
+            <div class="feature-item">
+                <h4>Giảng viên chuyên nghiệp</h4>
+                <p>Học từ các chuyên gia với nhiều năm kinh nghiệm thực tế.</p>
+            </div>
+            <div class="feature-item">
+                <h4>Chứng chỉ hoàn thành</h4>
+                <p>Nhận chứng chỉ được công nhận sau khi hoàn thành khóa học.</p>
+            </div>
+            <div class="feature-item">
+                <h4>Hỗ trợ 24/7</h4>
+                <p>Đội ngũ hỗ trợ luôn sẵn sàng giải đáp mọi thắc mắc của bạn.</p>
+            </div>
         </div>
-    </section>
-
-    <!-- My Courses (if logged in) -->
-    <section class="section" id="myCoursesSection" style="display:none">
-        <h2 class="section-title">🎯 Khóa học của tôi</h2>
-        <p class="section-subtitle">Các khóa học bạn đã được cấp quyền truy cập</p>
-        <div class="courses-grid" id="myCoursesGrid"></div>
-    </section>
-
-    <!-- My Payments -->
-    <section class="section" id="myPaymentsSection" style="display:none">
-        <h2 class="section-title">💳 Lịch sử giao dịch</h2>
-        <div class="table-wrap">
-            <table style="width:100%;text-align:left;border-collapse:collapse">
-                <thead>
-                    <tr style="border-bottom:1px solid #e2e8f0">
-                        <th style="padding:1rem">Mã ĐH</th>
-                        <th style="padding:1rem">Khóa học</th>
-                        <th style="padding:1rem">Số tiền</th>
-                        <th style="padding:1rem">PTTT</th>
-                        <th style="padding:1rem">Trạng thái</th>
-                        <th style="padding:1rem">Mã GD</th>
-                        <th style="padding:1rem">Ngày tạo</th>
-                    </tr>
-                </thead>
-                <tbody id="myPaymentsTable">
-                    <tr><td colspan="7" style="text-align:center;padding:1rem"><div class="spinner"></div></td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
+    </div>
 </div>
+
+<!-- Removed sections relocated to courses.html, my-courses.html, history.html -->
 
 <!-- Footer -->
 <footer class="footer">
-    <p>© 2026 LearnHub – E-Learning Platform. Made with ❤️</p>
+    <div class="footer-brand">Learn<span>Hub</span></div>
+    <p>Nền tảng học trực tuyến chất lượng cao &bull; &copy; 2026 LearnHub</p>
 </footer>
 
 <script src="js/api.js"></script>
 <script src="js/main.js"></script>
 <script>
-// Show "My Courses" section if logged in
-document.addEventListener('DOMContentLoaded', () => {
-    if (isLoggedIn()) {
-        document.getElementById('myCoursesSection').style.display = 'block';
-        document.getElementById('myPaymentsSection').style.display = 'block';
-    }
-});
+// Logic loaded via main.js
 </script>
 </body>
 </html>
+

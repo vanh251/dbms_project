@@ -7,8 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
     const user = getUser();
     if (!user || user.groupId !== 1) {
-        alert('Bạn không có quyền truy cập trang này.');
-        window.location.href = 'index.html'; return;
+        showToast('Bạn không có quyền truy cập trang này.', 'error');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+        return;
     }
 
     document.getElementById('adminUsername').textContent = user.fullname;
@@ -49,9 +50,9 @@ async function loadAdminCourses() {
             <td>${c.price || 'Miễn phí'}</td>
             <td><span class="badge badge-${c.status === 1 ? 'active' : 'inactive'}">${c.status === 1 ? 'Hoạt động' : 'Ẩn'}</span></td>
             <td>
-                <button class="btn btn-sm btn-outline" onclick="openEditCourse(${c.id})">✏️ Sửa</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteCourse(${c.id},'${c.name}')">🗑 Xóa</button>
-                <button class="btn btn-sm btn-secondary" onclick="openPartModal(${c.id},'${c.name}')">➕ Chương</button>
+                <button class="btn btn-sm btn-outline" onclick="openEditCourse(${c.id})">Sửa</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteCourse(${c.id},'${c.name}')">Xóa</button>
+                <button class="btn btn-sm btn-secondary" onclick="openPartModal(${c.id},'${c.name}')">Chương</button>
             </td>
         </tr>
     `).join('');
@@ -63,6 +64,13 @@ async function openCreateCourse() {
     showModal('Thêm khóa học mới', `
         <div class="form-group"><label>Tên khóa học *</label><input type="text" id="fc-name" placeholder="VD: Lập trình Java cơ bản"></div>
         <div class="form-group"><label>Slug</label><input type="text" id="fc-slug" placeholder="lap-trinh-java"></div>
+        <div class="form-group">
+            <label>URL ảnh bìa (Thumbnail)</label>
+            <input type="url" id="fc-thumbnail" placeholder="https://..." oninput="previewThumb('fc-thumbnail','fc-thumb-preview')">
+            <div id="fc-thumb-preview" style="margin-top:0.6rem;display:none">
+                <img src="" alt="Preview" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:180px;object-fit:cover">
+            </div>
+        </div>
         <div class="form-row">
             <div class="form-group"><label>Giá</label><input type="text" id="fc-price" placeholder="499.000đ"></div>
             <div class="form-group"><label>Giá gốc</label><input type="text" id="fc-oldprice" placeholder="999.000đ"></div>
@@ -76,7 +84,7 @@ async function openCreateCourse() {
             </div>
         </div>
         <div class="form-group"><label>Danh mục</label><select id="fc-cat"><option value="">-- Chọn --</option>${catOptions}</select></div>
-        <button class="btn btn-primary btn-block" onclick="submitCreateCourse()">💾 Tạo khóa học</button>
+        <button class="btn btn-primary btn-block" onclick="submitCreateCourse()">Tạo khóa học</button>
     `);
 }
 
@@ -84,6 +92,7 @@ async function submitCreateCourse() {
     const body = {
         name: document.getElementById('fc-name').value.trim(),
         slug: document.getElementById('fc-slug').value.trim(),
+        thumbnail: document.getElementById('fc-thumbnail').value.trim(),
         price: document.getElementById('fc-price').value.trim(),
         oldPrice: document.getElementById('fc-oldprice').value.trim(),
         description: document.getElementById('fc-desc').value.trim(),
@@ -92,7 +101,7 @@ async function submitCreateCourse() {
         status: parseInt(document.getElementById('fc-status').value),
         categoryId: document.getElementById('fc-cat').value ? parseInt(document.getElementById('fc-cat').value) : null
     };
-    if (!body.name) { alert('Tên khóa học không được để trống'); return; }
+    if (!body.name) { showToast('Tên khóa học không được để trống', 'warning'); return; }
     await apiFetch('/api/admin/courses', { method: 'POST', body: JSON.stringify(body) });
     closeModal();
     loadAdminCourses();
@@ -107,6 +116,13 @@ async function openEditCourse(id) {
     showModal(`Sửa khóa học #${id}`, `
         <div class="form-group"><label>Tên khóa học *</label><input id="ec-name" value="${course.name || ''}"></div>
         <div class="form-group"><label>Slug</label><input id="ec-slug" value="${course.slug || ''}"></div>
+        <div class="form-group">
+            <label>URL ảnh bìa (Thumbnail)</label>
+            <input type="url" id="ec-thumbnail" value="${course.thumbnail || ''}" placeholder="https://..." oninput="previewThumb('ec-thumbnail','ec-thumb-preview')">
+            <div id="ec-thumb-preview" style="margin-top:0.6rem;display:${course.thumbnail ? 'block' : 'none'}">
+                <img src="${course.thumbnail || ''}" alt="Preview" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:180px;object-fit:cover">
+            </div>
+        </div>
         <div class="form-row">
             <div class="form-group"><label>Giá</label><input id="ec-price" value="${course.price || ''}"></div>
             <div class="form-group"><label>Giá gốc</label><input id="ec-oldprice" value="${course.oldPrice || ''}"></div>
@@ -123,7 +139,7 @@ async function openEditCourse(id) {
             </div>
         </div>
         <div class="form-group"><label>Danh mục</label><select id="ec-cat"><option value="">-- Chọn --</option>${catOptions}</select></div>
-        <button class="btn btn-primary btn-block" onclick="submitEditCourse(${id})">💾 Lưu thay đổi</button>
+        <button class="btn btn-primary btn-block" onclick="submitEditCourse(${id})">Lưu thay đổi</button>
     `);
 }
 
@@ -131,6 +147,7 @@ async function submitEditCourse(id) {
     const body = {
         name: document.getElementById('ec-name').value.trim(),
         slug: document.getElementById('ec-slug').value.trim(),
+        thumbnail: document.getElementById('ec-thumbnail').value.trim(),
         price: document.getElementById('ec-price').value.trim(),
         oldPrice: document.getElementById('ec-oldprice').value.trim(),
         description: document.getElementById('ec-desc').value.trim(),
@@ -145,8 +162,18 @@ async function submitEditCourse(id) {
 }
 
 async function deleteCourse(id, name) {
-    if (!confirm(`Bạn chắc chắn muốn xóa khóa học "${name}"?`)) return;
+    showModal('Xác nhận xóa', `
+        <p style="margin-bottom:1.5rem;color:var(--text)">Bạn chắc chắn muốn xóa khóa học "<strong>${name}</strong>"? Hành động này không thể hoàn tác.</p>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+            <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+            <button class="btn btn-danger" onclick="submitDeleteCourse(${id})">Xóa</button>
+        </div>
+    `);
+}
+
+async function submitDeleteCourse(id) {
     await apiFetch(`/api/admin/courses/${id}`, { method: 'DELETE' });
+    closeModal();
     loadAdminCourses();
 }
 
@@ -154,7 +181,7 @@ async function deleteCourse(id, name) {
 function openPartModal(courseId, courseName) {
     showModal(`Thêm chương – ${courseName}`, `
         <div class="form-group"><label>Tên chương</label><input id="part-name" placeholder="VD: Chương 1: Giới thiệu"></div>
-        <button class="btn btn-primary btn-block" onclick="submitAddPart(${courseId})">➕ Thêm chương</button>
+        <button class="btn btn-primary btn-block" onclick="submitAddPart(${courseId})">Thêm chương</button>
         <hr style="margin:1.5rem 0">
         <div id="partLessonContent">
             <p style="color:#64748b;font-size:0.9rem">Sau khi thêm chương, dùng nút "Thêm bài" để thêm bài học.</p>
@@ -164,19 +191,19 @@ function openPartModal(courseId, courseName) {
 
 async function submitAddPart(courseId) {
     const name = document.getElementById('part-name').value.trim();
-    if (!name) { alert('Tên chương không được để trống'); return; }
+    if (!name) { showToast('Tên chương không được để trống', 'warning'); return; }
     const result = await apiFetch(`/api/admin/courses/${courseId}/parts`, { method: 'POST', body: JSON.stringify({ name }) });
     if (result && result.id) {
         document.getElementById('part-name').value = '';
         document.getElementById('partLessonContent').innerHTML = `
-            <p style="color:#22c55e;margin-bottom:1rem">✅ Đã thêm chương "${result.name}" (ID: ${result.id})</p>
+            <p style="color:#22c55e;margin-bottom:1rem">Đã thêm chương "${result.name}" (ID: ${result.id})</p>
             <div class="form-group"><label>Tên bài học</label><input id="lesson-name" placeholder="VD: Bài 1: Hello World"></div>
             <div class="form-row">
                 <div class="form-group"><label>Thời lượng</label><input id="lesson-len" placeholder="10:30"></div>
             </div>
             <div class="form-group"><label>Mô tả</label><textarea id="lesson-desc"></textarea></div>
             <div class="form-group"><label>Nội dung / URL Video</label><input id="lesson-value" placeholder="https://youtube.com/watch?v=... hoặc nội dung text"></div>
-            <button class="btn btn-secondary btn-block" onclick="submitAddLesson(${result.id})">➕ Thêm bài học</button>
+            <button class="btn btn-secondary btn-block" onclick="submitAddLesson(${result.id})">Thêm bài học</button>
         `;
         loadAdminCourses();
     }
@@ -189,10 +216,10 @@ async function submitAddLesson(partId) {
         description: document.getElementById('lesson-desc').value.trim(),
         value: document.getElementById('lesson-value').value.trim()
     };
-    if (!body.name) { alert('Tên bài học không được để trống'); return; }
+    if (!body.name) { showToast('Tên bài học không được để trống', 'warning'); return; }
     const result = await apiFetch(`/api/admin/parts/${partId}/lessons`, { method: 'POST', body: JSON.stringify(body) });
     if (result && result.id) {
-        alert(`✅ Đã thêm bài học "${result.name}"`);
+        showToast(`Đã thêm bài học "${result.name}"`, 'success');
         document.getElementById('lesson-name').value = '';
         document.getElementById('lesson-len').value = '';
         document.getElementById('lesson-desc').value = '';
@@ -219,7 +246,7 @@ async function loadAdminUsers() {
             <td>${u.email}</td>
             <td><span class="badge badge-${u.groupId === 1 ? 'active' : 'inactive'}">${u.groupName || 'User'}</span></td>
             <td>
-                <button class="btn btn-sm btn-outline" onclick="openPermissionModal(${u.id},'${u.fullname}','${u.permission || ''}')">🔑 Phân quyền</button>
+                <button class="btn btn-sm btn-outline" onclick="openPermissionModal(${u.id},'${u.fullname}','${u.permission || ''}')">Phân quyền</button>
             </td>
         </tr>
     `).join('');
@@ -235,12 +262,12 @@ async function openPermissionModal(userId, name, currentPerm) {
         </label>
     `).join('');
 
-    showModal(`🔑 Phân quyền – ${name}`, `
+    showModal(`Phân quyền – ${name}`, `
         <p style="color:#64748b;font-size:0.88rem;margin-bottom:1rem">Chọn các khóa học mà người dùng được phép truy cập:</p>
         <div id="courseCheckboxes" style="max-height:300px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;padding:0.8rem">
             ${courseCheckboxes}
         </div>
-        <button class="btn btn-primary btn-block" style="margin-top:1rem" onclick="submitPermission(${userId})">💾 Lưu phân quyền</button>
+        <button class="btn btn-primary btn-block" style="margin-top:1rem" onclick="submitPermission(${userId})">Lưu phân quyền</button>
     `);
 }
 
@@ -251,7 +278,7 @@ async function submitPermission(userId) {
         method: 'PUT',
         body: JSON.stringify({ permission })
     });
-    alert('✅ Đã cập nhật phân quyền thành công!');
+    showToast('Đã cập nhật phân quyền thành công!', 'success');
     closeModal();
     loadAdminUsers();
 }
@@ -275,13 +302,13 @@ async function loadAdminCategories() {
 function openCreateCategory() {
     showModal('Thêm danh mục mới', `
         <div class="form-group"><label>Tên danh mục *</label><input type="text" id="cat-name" placeholder="VD: Lập trình Web"></div>
-        <button class="btn btn-primary btn-block" onclick="submitCreateCategory()">💾 Tạo danh mục</button>
+        <button class="btn btn-primary btn-block" onclick="submitCreateCategory()">Tạo danh mục</button>
     `);
 }
 
 async function submitCreateCategory() {
     const name = document.getElementById('cat-name').value.trim();
-    if (!name) { alert('Tên danh mục không được để trống'); return; }
+    if (!name) { showToast('Tên danh mục không được để trống', 'warning'); return; }
     await apiFetch('/api/admin/categories', { method: 'POST', body: JSON.stringify({ name }) });
     closeModal();
     loadAdminCategories();
@@ -307,16 +334,20 @@ async function loadAdminPayments() {
             <td>${p.paymentMethod || 'N/A'}</td>
             <td><span class="badge badge-${p.status === 1 ? 'active' : 'inactive'}">${p.status === 1 ? 'Hoàn thành' : 'Chờ duyệt'}</span></td>
             <td>
-                ${p.status === 0 ? `<button class="btn btn-sm btn-primary" onclick="openConfirmPaymentModal(${p.id})">✅ Duyệt đơn</button>` : ''}
+                ${p.status === 0 ? `<button class="btn btn-sm btn-primary" onclick="openConfirmPaymentModal(${p.id})">Duyệt đơn</button>` : ''}
             </td>
         </tr>
     `).join('');
 }
 
 function openConfirmPaymentModal(paymentId) {
-    if (confirm('Bạn có chắc chắn muốn duyệt đơn thanh toán này? Người dùng sẽ được cấp quyền học ngay lập tức.')) {
-        submitConfirmPayment(paymentId);
-    }
+    showModal('Xác nhận duyệt', `
+        <p style="margin-bottom:1.5rem;line-height:1.5;color:var(--text)">Bạn có chắc chắn muốn duyệt đơn thanh toán này?<br>Người dùng sẽ được cấp quyền học ngay lập tức.</p>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+            <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+            <button class="btn btn-primary" onclick="submitConfirmPayment(${paymentId})">Xác nhận</button>
+        </div>
+    `);
 }
 
 async function submitConfirmPayment(paymentId) {
@@ -326,13 +357,13 @@ async function submitConfirmPayment(paymentId) {
         });
         
         if (result) {
-            alert('✅ Duyệt đơn thành công. Hệ thống đã tự động ghi danh User!');
+            showModal('Thành công', '<p style="margin-bottom:1.5rem;color:var(--text)">Duyệt đơn thành công. Hệ thống đã tự động ghi danh User!</p><button class="btn btn-primary btn-block" onclick="closeModal()">Đóng</button>');
             loadAdminPayments();
         } else {
-             alert('❌ Lỗi: Không nhận được phản hồi từ máy chủ.');
+             showModal('Lỗi', '<p style="margin-bottom:1.5rem;color:var(--text)">Lỗi: Không nhận được phản hồi từ máy chủ.</p><button class="btn btn-danger btn-block" onclick="closeModal()">Đóng</button>');
         }
     } catch (err) {
-        alert('❌ ' + (err.message || 'Lỗi khi duyệt đơn. Vui lòng thử lại.'));
+        showModal('Lỗi', '<p style="margin-bottom:1.5rem;color:var(--text)">' + (err.message || 'Lỗi khi duyệt đơn. Vui lòng thử lại.') + '</p><button class="btn btn-danger btn-block" onclick="closeModal()">Đóng</button>');
     }
 }
 
@@ -361,4 +392,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function getAllCourses() {
     return await apiFetch('/api/admin/courses') || [];
+}
+
+// Live thumbnail preview
+function previewThumb(inputId, previewId) {
+    const url = document.getElementById(inputId).value.trim();
+    const box = document.getElementById(previewId);
+    if (!box) return;
+    if (url) {
+        const img = box.querySelector('img');
+        if (img) img.src = url;
+        box.style.display = 'block';
+    } else {
+        box.style.display = 'none';
+    }
 }
