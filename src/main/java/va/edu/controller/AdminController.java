@@ -65,12 +65,10 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(adminService.getAllUsers()));
     }
 
-    @PutMapping("/users/{userId}/permission")
-    public ResponseEntity<ApiResponse<UserDTO>> grantPermission(
-            @PathVariable Integer userId,
-            @RequestBody Map<String, String> body) {
-        String courseIds = body.get("permission");
-        return ResponseEntity.ok(ApiResponse.success("Cập nhật quyền thành công", adminService.grantPermission(userId, courseIds)));
+    // Xem danh sách khóa học mà user đã được ghi danh (chỉ xem, không phân quyền thủ công)
+    @GetMapping("/users/{userId}/courses")
+    public ResponseEntity<ApiResponse<List<CourseDTO>>> getUserCourses(@PathVariable Integer userId) {
+        return ResponseEntity.ok(ApiResponse.success(adminService.getUserCourses(userId)));
     }
 
     // --- CATEGORIES ---
@@ -86,6 +84,12 @@ public class AdminController {
             return ResponseEntity.badRequest().body(ApiResponse.error("Tên danh mục không được để trống"));
         }
         return ResponseEntity.ok(ApiResponse.success("Thêm danh mục thành công", adminService.createCategory(name)));
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable Integer id) {
+        adminService.deleteCategory(id);
+        return ResponseEntity.ok(ApiResponse.success("Đã xóa danh mục", null));
     }
 
     // --- PAYMENTS ---

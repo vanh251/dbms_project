@@ -32,7 +32,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Static frontend files
                         .requestMatchers("/", "/index.html", "/login.html", "/register.html",
-                                "/course.html", "/admin.html")
+                                "/course.html", "/admin.html", "/courses.html", "/my-courses.html", "/history.html")
                         .permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         // Public API

@@ -118,6 +118,15 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    /** Trả về danh sách khóa học mà user đã ghi danh (để admin xem, không cần phân quyền thủ công) */
+    public List<CourseDTO> getUserCourses(Integer userId) {
+        List<Integer> courseIds = userCourseRepository.findCourseIdsByUserId(userId);
+        if (courseIds.isEmpty()) return Collections.emptyList();
+        return courseRepository.findAllById(courseIds).stream()
+                .map(this::toCourseDTO)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Cấp quyền: ghi danh user vào từng course trong danh sách courseIds (cách nhau bằng dấu phẩy).
      * Đây là nguồn chân lý duy nhất – không còn dùng cột permission trên bảng users.
@@ -164,6 +173,10 @@ public class AdminService {
         CourseCategory category = CourseCategory.builder().name(name).build();
         CourseCategory saved = categoryRepository.save(category);
         return Map.<String, Object>of("id", saved.getId(), "name", saved.getName());
+    }
+
+    public void deleteCategory(Integer id) {
+        categoryRepository.deleteById(id);
     }
 
     private CourseDTO toCourseDTO(Course c) {

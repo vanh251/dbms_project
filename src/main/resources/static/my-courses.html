@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khóa học của tôi – LearnHub</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+    <a class="logo" href="index.html">Learn<span>Hub</span></a>
+    <div class="nav-links">
+        <a href="index.html" class="hide-mobile">Trang chủ</a>
+        <a href="courses.html" class="hide-mobile">Khóa học</a>
+    </div>
+    <div id="navAuth"></div>
+</nav>
+
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem; min-height: 70vh;">
+    <section class="section" id="myCoursesSection">
+        <div class="section-header">
+            <h2 class="section-title">Khóa học của tôi</h2>
+            <p class="section-subtitle">Các khóa học bạn đã được cấp quyền truy cập</p>
+        </div>
+        <div class="courses-grid" id="myCoursesGrid"></div>
+    </section>
+</div>
+
+<footer class="footer">
+    <div class="footer-brand">Learn<span>Hub</span></div>
+    <p>Nền tảng học trực tuyến chất lượng cao &bull; &copy; 2026 LearnHub</p>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+    if (!isLoggedIn()) window.location.href = 'login.html';
+</script>
+</body>
+</html>

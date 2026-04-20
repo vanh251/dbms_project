@@ -49,7 +49,7 @@ SELECT setval(pg_get_serial_sequence('"course_categories"', 'id'), (SELECT MAX(i
 -- -------------------------------------------------------
 -- 4. COURSES
 -- -------------------------------------------------------
-INSERT INTO "courses" (id, name, slug, description, require,
+INSERT INTO "courses" (id, name, slug, thumbnail, description, require,
                        total_lession, total_part, total_time,
                        price, old_price, category_id, status)
 VALUES
@@ -57,6 +57,7 @@ VALUES
     (1,
      'HTML, CSS & JavaScript – Từ Zero đến Hero',
      'html-css-js-zero-to-hero',
+     'https://i.ytimg.com/vi/5ujZ_HOCpME/maxresdefault.jpg',
      'Khóa học lập trình web frontend toàn diện từ HTML cơ bản đến JavaScript nâng cao, có dự án thực tế.',
      'Không cần kiến thức nền. Chỉ cần máy tính và kết nối internet.',
      6, 3, '9 giờ 30 phút',
@@ -66,6 +67,7 @@ VALUES
     (2,
      'Xây dựng Ứng dụng Chat Realtime Fullstack',
      'chat-app-realtime-fullstack',
+     'https://i.ytimg.com/vi/3lH2oqKK-3U/maxresdefault.jpg',
      'Xây dựng ứng dụng chat realtime với React, Express, MongoDB và Socket.IO – dự án Moji hoàn chỉnh.',
      'Biết cơ bản HTML/CSS, JavaScript. Có kiến thức nền về lập trình.',
      5, 2, '10 giờ 21 phút',
@@ -75,6 +77,7 @@ VALUES
     (3,
      'Claude AI & Claude Code – Lập trình với AI',
      'claude-ai-code-lap-trinh-voi-ai',
+     'https://i.ytimg.com/vi/eX33TV-xFEE/maxresdefault.jpg',
      'Khám phá Claude AI và Claude Code – công cụ AI mạnh mẽ giúp lập trình viên tăng tốc độ làm việc.',
      'Có kiến thức lập trình cơ bản.',
      5, 1, '~30 phút',
@@ -84,6 +87,7 @@ VALUES
     (4,
      'Next.js – Từ Cơ Bản đến Nâng Cao',
      'nextjs-co-ban-den-nang-cao',
+     'https://i.ytimg.com/vi/e8hmRTrpoiM/maxresdefault.jpg',
      'Học Next.js App Router, Server/Client Components, các chiến lược rendering và tối ưu hiệu năng.',
      'Biết React cơ bản.',
      3, 1, '23 phút',
@@ -93,6 +97,7 @@ VALUES
     (5,
      'ReactJS – Từ JavaScript đến Fullstack MERN',
      'reactjs-fullstack-mern',
+     'https://i.ytimg.com/vi/UGFaM0sT-0g/maxresdefault.jpg',
      'Học React JS từ nền tảng JavaScript, xây dựng dự án Fullstack MERN với TypeScript, Tailwind và Shadcn.',
      'Biết JavaScript cơ bản.',
      4, 2, '4 giờ 44 phút',
@@ -102,6 +107,7 @@ VALUES
     (6,
      'NestJS – Backend Framework Hiện Đại',
      'nestjs-backend-hien-dai',
+     'https://i.ytimg.com/vi/8YArEfYCeKc/maxresdefault.jpg',
      'Tìm hiểu NestJS – framework backend đang viral trong cộng đồng developer, kiến trúc module hóa chuyên nghiệp.',
      'Biết Node.js và JavaScript/TypeScript cơ bản.',
      2, 1, '~8 phút',

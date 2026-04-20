@@ -13,9 +13,10 @@
 <nav class="navbar">
     <a class="logo" href="index.html">Learn<span>Hub</span></a>
     <div class="nav-links">
-        <a href="index.html" class="hide-mobile">← Trang chủ</a>
-        <div id="navAuth"></div>
+        <a href="index.html" class="hide-mobile">Trang chủ</a>
+        <a href="courses.html" class="hide-mobile">Khóa học</a>
     </div>
+    <div id="navAuth"></div>
 </nav>
 
 <div class="container">
@@ -38,15 +39,16 @@
 
 <!-- Footer -->
 <footer class="footer">
-    <p>© 2026 LearnHub – E-Learning Platform</p>
+    <div class="footer-brand">Learn<span>Hub</span></div>
+    <p>Nền tảng học trực tuyến chất lượng cao &bull; &copy; 2026 LearnHub</p>
 </footer>
 
 <!-- Buy Course Modal -->
 <div class="modal-overlay" id="buyModalOverlay">
     <div class="modal">
         <div class="modal-header">
-            <h3>💳 Thanh toán khóa học</h3>
-            <button class="modal-close" onclick="closeBuyModal()">✕</button>
+            <h3>Thanh toán khóa học</h3>
+            <button class="modal-close" onclick="closeBuyModal()">&times;</button>
         </div>
         <div id="buyModalBody" style="padding-top:1rem">
             <!-- Filled by main.js -->
