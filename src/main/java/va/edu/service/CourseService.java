@@ -8,6 +8,8 @@ import va.edu.repository.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.scheduling.annotation.Scheduled;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -20,6 +22,12 @@ public class CourseService {
     private final LessonRepository lessonRepository;
     private final UserRepository userRepository;
     private final UserCourseRepository userCourseRepository;
+
+    @Scheduled(fixedRateString = "1800000") // 30 phút = 1800000 ms
+    @CacheEvict(value = {"active_courses", "course_detail"}, allEntries = true)
+    public void clearCourseCaches() {
+        log.info("BUFFER ĐỌC: Đã tự động dọn dẹp toàn bộ bộ nhớ đệm (RAM) sau 30 phút để cập nhật dữ liệu mới.");
+    }
 
     @Cacheable(value = "active_courses")
     public List<CourseDTO> getActiveCourses() {
