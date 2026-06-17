@@ -91,4 +91,28 @@ Hệ thống được thiết kế với các bảng chính:
    - `proceduce.sql`: Các Stored Procedure xử lý nghiệp vụ.
    - `trigger.sql`: Các Trigger tự động cập nhật dữ liệu.
    - `transaction.sql`: Các kịch bản xử lý Transaction.
+   - `console.sql`: Chứa cấu trúc bảng và các Index tối ưu truy vấn (Foreign keys, composite index).
 
+---
+
+## 🚀 Tối ưu Hiệu suất (Performance Optimization)
+
+Hệ thống được thiết kế và tối ưu hóa để chịu tải cao với các cơ chế sau:
+
+### 1. Database Indexing (PostgreSQL)
+Đã triển khai hệ thống Chỉ mục (Index) toàn diện tại tầng Database nhằm tăng tốc độ truy vấn:
+- **Foreign Key Index:** Đánh chỉ mục cho toàn bộ khóa ngoại (`category_id`, `course_id`, `user_id`,...) do PostgreSQL không tự động đánh chỉ mục cho FK, giúp tăng tốc tối đa các lệnh `JOIN` và tránh full-table scan khi cập nhật/xóa bản ghi cha.
+- **Filtering Index:** Đánh chỉ mục cho các trường thường xuyên được sử dụng trong mệnh đề `WHERE` (ví dụ: `status` của user/course, `transaction_id` của payment).
+- **Composite Index:** Đánh chỉ mục kết hợp (`lession_id`, `create_at` DESC) để tối ưu hóa việc load danh sách bình luận mới nhất của một bài học cực nhanh.
+
+### 2. Bộ đệm Đọc (Read Buffer / Caching)
+- Sử dụng **Spring Cache** (In-memory) thông qua `@EnableCaching`.
+- **Cách thức hoạt động:** Các danh sách ít thay đổi nhưng bị gọi liên tục (như danh sách khóa học trên trang chủ, chi tiết khóa học) được lưu thẳng vào RAM. Các request sau sẽ được phản hồi ngay lập tức (Cache Hit) mà không cần truy xuất xuống Database, giảm đáng kể tải I/O cho PostgreSQL.
+
+### 3. Bộ đệm Ghi (Write-Behind Buffer / Batching)
+Được triển khai chuyên biệt cho tính năng lưu trạng thái tiến độ bài học (`LessonProgressBuffer`), giải quyết bài toán nghẽn cổ chai khi hàng ngàn học viên cập nhật tiến độ cùng lúc.
+- **In-Memory Buffer:** Khi user cập nhật tiến độ, trạng thái chỉ được ghi tạm vào một cấu trúc dữ liệu thread-safe (`ConcurrentHashMap`) trên RAM (thời gian phản hồi ~0ms).
+- **Scheduled Batching & UPSERT:** Định kỳ mỗi 10 giây (`app.buffer.progress.flush-delay-ms=10000`), hệ thống sử dụng một Cron Job (`@Scheduled`) gom toàn bộ dữ liệu tiến độ mới và dùng tính năng Batch Update của JDBC (`INSERT ... ON CONFLICT ... DO UPDATE`) để xả xuống Database chỉ bằng **1 lần kết nối mạng duy nhất**, kết hợp với tính năng gom lô tự động của Hibernate (`hibernate.jdbc.batch_size=50`).
+
+### 4. Hệ thống Logging Bộ đệm riêng biệt
+Tất cả các sự kiện Cache Miss (phải đọc từ DB) hoặc Xả Buffer Ghi đều được ghi log độc lập ra file `logs/buffer-events.txt` (cấu hình qua `logback-spring.xml`), giúp quản trị viên dễ dàng theo dõi hiệu năng hệ thống mà không bị nhiễu bởi các log khác.
