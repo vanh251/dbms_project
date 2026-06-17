@@ -146,7 +146,9 @@ async function loadCourseDetail(id) {
     document.title = course.name + ' | LearnHub';
 
     const myCourses = isLoggedIn() ? await apiFetch('/api/client/my-courses').catch(() => []) : [];
+    const myPayments = isLoggedIn() ? await apiFetch('/api/client/my-payments').catch(() => []) : [];
     const isEnrolled = (myCourses || []).some(c => c.id === course.id);
+    const hasPending = (myPayments || []).some(p => p.courseId === course.id && p.status === 0);
 
     // Sidebar
     if (sidebarArea) {
@@ -154,11 +156,16 @@ async function loadCourseDetail(id) {
         const thumbHtml = course.thumbnail
             ? `<img src="${course.thumbnail}" alt="${course.name}" style="width:100%;height:200px;object-fit:cover;border-radius:var(--radius);margin-bottom:1.25rem" onerror="this.outerHTML='<div class=\'thumb\'><span style=\'font-size:0.85rem;font-weight:700;color:#2563eb;text-transform:uppercase\'>${label}</span></div>'">`
             : `<div class="thumb"><span style="font-size:0.85rem;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:0.5px">${label}</span></div>`;
-        const btnHtml = isEnrolled
-            ? `<button class="btn btn-primary btn-block" onclick="switchTab('learn')">Học ngay</button>`
-            : `<button class="btn btn-primary btn-block" onclick="handleEnroll(${course.id}, '${course.name}', '${course.price}')">
-                ${isLoggedIn() ? 'Mua khóa học' : 'Đăng nhập để mua'}
-               </button>`;
+        
+        let btnHtml = '';
+        if (isEnrolled) {
+            btnHtml = `<button id="sidebarCourseBtn" class="btn btn-primary btn-block" onclick="switchTab('learn')">Học ngay</button>`;
+        } else if (hasPending) {
+            btnHtml = `<button id="sidebarCourseBtn" class="btn btn-block" style="background:#f59e0b;border-color:#f59e0b;color:#fff;cursor:not-allowed" disabled>Đang chờ duyệt</button>`;
+        } else {
+            const btnText = isLoggedIn() ? (course.price && course.price !== '0' && course.price !== 'Miễn phí' ? 'Mua khóa học' : 'Nhận khóa học') : 'Đăng nhập để mua';
+            btnHtml = `<button id="sidebarCourseBtn" class="btn btn-primary btn-block" onclick="handleEnroll(${course.id}, '${course.name}', '${course.price}')">${btnText}</button>`;
+        }
 
         sidebarArea.innerHTML = `
             ${thumbHtml}
@@ -415,7 +422,12 @@ async function submitBuyCourse(courseId) {
         if (res && res.id) {
             showToast('Đã tạo đơn hàng thành công! Vui lòng chờ Admin duyệt.', 'success');
             closeBuyModal();
-            setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+            
+            // Cập nhật giao diện nút ngay tại chỗ
+            const sidebarBtn = document.getElementById('sidebarCourseBtn');
+            if (sidebarBtn) {
+                sidebarBtn.outerHTML = `<button id="sidebarCourseBtn" class="btn btn-block" style="background:#f59e0b;border-color:#f59e0b;color:#fff;cursor:not-allowed" disabled>Đang chờ duyệt</button>`;
+            }
         } else {
             showToast('Có lỗi xảy ra, không thể tạo đơn hàng.', 'error');
         }

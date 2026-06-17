@@ -25,7 +25,6 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
-    private final va.edu.repository.UserCourseRepository userCourseRepository;
 
     public PaymentDTO createPaymentOrder(String email, Integer courseId, PaymentRequest req) {
         User user = userRepository.findByEmail(email)
@@ -67,29 +66,14 @@ public class PaymentService {
             return toDTO(payment); // Already confirmed
         }
 
-        payment.setStatus(1);
-        payment.setTransactionId("MANUAL_CONFIRM");
-        payment.setUpdateAt(java.time.LocalDateTime.now());
-        payment = paymentRepository.save(payment);
+        // Gọi stored procedure — transaction đảm bảo cả hai bước (update payment + enroll user)
+        // được commit hoặc rollback cùng nhau ở tầng DB.
+        String transactionId = "MANUAL_" + orderId + "_" + System.currentTimeMillis();
+        paymentRepository.confirmPayment(orderId, transactionId);
 
-        User user = payment.getUser();
-        Course course = payment.getCourse();
-
-        // Ghi danh user vào bảng user_courses (nguon chân lý duy nhất về quyền)
-        boolean alreadyEnrolled = userCourseRepository
-                .existsByUserIdAndCourseId(user.getId(), course.getId());
-        if (!alreadyEnrolled) {
-            va.edu.entity.UserCourse uc = va.edu.entity.UserCourse.builder()
-                    .user(user)
-                    .course(course)
-                    .status(1)
-                    .progressPercent(0)
-                    .createAt(java.time.LocalDateTime.now())
-                    .updateAt(java.time.LocalDateTime.now())
-                    .build();
-            userCourseRepository.save(uc);
-        }
-
+        // Reload để lấy dữ liệu mới nhất sau khi procedure chạy
+        payment = paymentRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Payment not found after confirmation"));
         return toDTO(payment);
     }
 

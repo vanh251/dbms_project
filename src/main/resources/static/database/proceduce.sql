@@ -103,36 +103,5 @@ INSERT INTO "user_courses" (user_id, course_id, status) VALUES (p_user_id, p_cou
 END;
 $$;
 
--- 6. sp_unenroll_course
-CREATE OR REPLACE PROCEDURE sp_unenroll_course(p_user_id INT, p_course_id INT) LANGUAGE plpgsql AS $$
-BEGIN
-UPDATE "user_courses" SET status = 0, update_at = CURRENT_TIMESTAMP WHERE user_id = p_user_id AND course_id = p_course_id AND status = 1;
-END;
-$$;
 
--- 7. Cập nhật tiến độ khóa học khi hoàn thành bài học (Trigger)
-CREATE OR REPLACE FUNCTION fn_update_course_progress() RETURNS TRIGGER AS $$
-DECLARE
-    v_total INT;
-    v_completed INT;
-    v_progress INT;
-BEGIN
-    SELECT total_lession INTO v_total FROM "courses" WHERE id = NEW.course_id;
-    
-    IF v_total IS NULL OR v_total = 0 THEN
-        v_progress := 0;
-    ELSE
-        SELECT count(*) INTO v_completed FROM "user_lessons" WHERE course_id = NEW.course_id AND user_id = NEW.user_id AND is_completed = true;
-        v_progress := (v_completed * 100) / v_total;
-    END IF;
 
-    UPDATE "user_courses" SET progress_percent = v_progress WHERE user_id = NEW.user_id AND course_id = NEW.course_id;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_update_course_progress ON "user_lessons";
-CREATE TRIGGER trg_update_course_progress
-AFTER INSERT OR UPDATE OF is_completed ON "user_lessons"
-FOR EACH ROW EXECUTE FUNCTION fn_update_course_progress();

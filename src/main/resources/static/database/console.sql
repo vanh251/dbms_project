@@ -118,3 +118,5 @@ CREATE TABLE "payments" (
     "create_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "update_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE user_courses ADD CONSTRAINT uq_user_course UNIQUE (user_id, course_id);

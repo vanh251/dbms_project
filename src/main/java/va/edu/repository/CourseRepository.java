@@ -28,12 +28,6 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     @Procedure(procedureName = "sp_update_course")
     void updateCourse(Integer p_course_id, String p_name, String p_slug, String p_thumbnail, String p_description, String p_require, String p_price, String p_old_price, String p_total_time, Integer p_category_id, Integer p_status);
 
-    @Procedure(procedureName = "sp_transaction_init_full_course")
-    void initFullCourse(String p_name, Integer p_category_id, Integer p_instructor_id);
-
-    @Procedure(procedureName = "sp_transaction_cancel_course_and_refund")
-    void cancelCourseAndRefund(Integer p_course_id);
-
     @Procedure(procedureName = "sp_delete_course")
     void deleteCourse(Integer p_course_id);
 }
