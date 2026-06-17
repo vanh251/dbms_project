@@ -12,6 +12,7 @@ import va.edu.dto.request.PaymentRequest;
 import va.edu.dto.response.ApiResponse;
 import va.edu.service.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/client")
@@ -58,6 +59,15 @@ public class ClientController {
             @AuthenticationPrincipal UserDetails userDetails) {
         CommentDTO comment = commentService.addComment(id, userDetails.getUsername(), req);
         return ResponseEntity.ok(ApiResponse.success("Bình luận thành công", comment));
+    }
+
+    @PostMapping("/lessons/{id}/complete")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> toggleLessonComplete(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        boolean newStatus = lessonService.toggleLessonCompleted(id, userDetails.getUsername());
+        String msg = newStatus ? "Đã hoàn thành bài học" : "Đã bỏ đánh dấu hoàn thành";
+        return ResponseEntity.ok(ApiResponse.success(msg, Map.of("isCompleted", newStatus)));
     }
 
     // --- PAYMENTS ---

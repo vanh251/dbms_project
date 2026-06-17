@@ -285,7 +285,15 @@ async function openUserCoursesModal(userId, name) {
                 ${courses.map(c => `
                     <li style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0;border-bottom:1px solid var(--border)">
                         <span style="color:#22c55e;font-size:1rem">&#10003;</span>
-                        <span style="font-weight:500">${c.name}</span>
+                        <div style="flex:1">
+                            <div style="font-weight:500">${c.name}</div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.25rem">
+                                <div style="flex:1;background-color:#e2e8f0;height:4px;border-radius:2px;overflow:hidden">
+                                    <div style="width:${c.progressPercent || 0}%;background-color:var(--primary);height:100%"></div>
+                                </div>
+                                <span style="font-size:0.75rem;color:#64748b">${c.progressPercent || 0}%</span>
+                            </div>
+                        </div>
                         <span style="color:#64748b;font-size:0.82rem;margin-left:auto">${c.price || 'Miễn phí'}</span>
                     </li>
                 `).join('')}

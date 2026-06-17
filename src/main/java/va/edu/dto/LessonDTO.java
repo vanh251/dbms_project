@@ -11,4 +11,5 @@ public class LessonDTO {
     private String value;    // content/video URL (only if user has permission)
     private Integer courseId;
     private Integer partId;
+    private Boolean isCompleted; // trạng thái hoàn thành của user hiện tại (null nếu chưa có ghi nhận)
 }

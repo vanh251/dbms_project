@@ -18,4 +18,5 @@ public class CourseDTO {
     private Integer categoryId;
     private String categoryName;
     private Integer status;
+    private Integer progressPercent;
 }

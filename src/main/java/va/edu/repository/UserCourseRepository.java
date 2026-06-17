@@ -20,6 +20,8 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Integer>
     @Query("SELECT uc.course.id FROM UserCourse uc WHERE uc.user.id = :userId")
     List<Integer> findCourseIdsByUserId(@Param("userId") Integer userId);
 
+    List<UserCourse> findByUserId(Integer userId);
+
     @Procedure(procedureName = "sp_enroll_course")
     void enrollCourse(Integer p_user_id, Integer p_course_id);
 

@@ -51,12 +51,15 @@ public class CourseService {
     public List<CourseDTO> getMyCourses(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        // Lấy danh sách course_id mà user đã gđk danh từ bảng user_courses
-        List<Integer> ids = userCourseRepository.findCourseIdsByUserId(user.getId());
-        if (ids.isEmpty()) return Collections.emptyList();
-        return courseRepository.findAllById(ids).stream()
-                .map(this::toCourseDTO)
-                .collect(Collectors.toList());
+        
+        List<UserCourse> userCourses = userCourseRepository.findByUserId(user.getId());
+        if (userCourses.isEmpty()) return Collections.emptyList();
+        
+        return userCourses.stream().map(uc -> {
+            CourseDTO dto = toCourseDTO(uc.getCourse());
+            dto.setProgressPercent(uc.getProgressPercent());
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     private CourseDTO toCourseDTO(Course c) {

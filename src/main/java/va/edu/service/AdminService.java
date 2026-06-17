@@ -137,17 +137,15 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Trả về danh sách khóa học mà user đã ghi danh (để admin xem, không cần phân
-     * quyền thủ công)
-     */
     public List<CourseDTO> getUserCourses(Integer userId) {
-        List<Integer> courseIds = userCourseRepository.findCourseIdsByUserId(userId);
-        if (courseIds.isEmpty())
-            return Collections.emptyList();
-        return courseRepository.findAllById(courseIds).stream()
-                .map(this::toCourseDTO)
-                .collect(Collectors.toList());
+        List<UserCourse> userCourses = userCourseRepository.findByUserId(userId);
+        if (userCourses.isEmpty()) return Collections.emptyList();
+        
+        return userCourses.stream().map(uc -> {
+            CourseDTO dto = toCourseDTO(uc.getCourse());
+            dto.setProgressPercent(uc.getProgressPercent());
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     /**

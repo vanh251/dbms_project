@@ -105,6 +105,16 @@ function courseCardHTML(c) {
             <div class="card-category">${c.categoryName || 'Khóa học'}</div>
             <div class="card-title">${c.name}</div>
             <div class="card-desc">${c.description || ''}</div>
+            ${c.progressPercent != null ? `
+            <div style="margin-top:0.75rem;margin-bottom:0.75rem">
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.25rem;color:#64748b">
+                    <span>Tiến độ</span>
+                    <span style="font-weight:600;color:var(--primary)">${c.progressPercent}%</span>
+                </div>
+                <div style="width:100%;background-color:#e2e8f0;height:6px;border-radius:4px;overflow:hidden">
+                    <div style="width:${c.progressPercent}%;background-color:var(--primary);height:100%;transition:width 0.3s ease"></div>
+                </div>
+            </div>` : ''}
             <div class="card-meta">
                 <span>${c.totalLession || 0} bài học</span>
                 <span>${c.totalPart || 0} chương</span>
@@ -247,7 +257,13 @@ async function loadLesson(lessonId) {
     }
 
     const lessonInfo = document.getElementById('lessonInfo');
-    lessonInfo.innerHTML = `<h2 style="margin-bottom:0.5rem;margin-top:1rem;font-size:1.4rem;color:var(--text)">${lesson.name}</h2>${lesson.description ? `<p style="color:var(--text-secondary);margin-bottom:1rem">${lesson.description}</p>` : ''}`;
+    lessonInfo.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; margin-bottom:0.5rem;">
+            <h2 style="font-size:1.4rem; color:var(--text); margin:0;">${lesson.name}</h2>
+            ${lesson.value != null ? renderCompleteBtn(lessonId, lesson.isCompleted) : ''}
+        </div>
+        ${lesson.description ? `<p style="color:var(--text-secondary);margin-bottom:1rem">${lesson.description}</p>` : ''}
+    `;
 
     if (!lesson.value) {
         player.innerHTML = `<div class="placeholder">Bạn chưa được cấp quyền xem bài học này. Vui lòng liên hệ Admin để được kích hoạt.</div>`;
@@ -449,4 +465,49 @@ function formatDate(isoString) {
     if (!isoString) return '';
     const d = new Date(isoString);
     return d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderCompleteBtn(lessonId, isCompleted) {
+    if (isCompleted) {
+        return `<button class="btn btn-sm" style="background:#16a34a;border-color:#16a34a;color:#fff;cursor:pointer" onclick="toggleLessonCompleted(${lessonId})">
+            ✓ Đã hoàn thành
+        </button>`;
+    } else {
+        return `<button class="btn btn-sm btn-outline" style="border-color:#16a34a;color:#16a34a" onclick="toggleLessonCompleted(${lessonId})">
+            Hoàn thành bài học
+        </button>`;
+    }
+}
+
+async function toggleLessonCompleted(lessonId) {
+    try {
+        const res = await apiFetch(`/api/client/lessons/${lessonId}/complete`, { method: 'POST' });
+        const newStatus = res && res.isCompleted;
+        showToast(newStatus ? 'Đã đánh dấu hoàn thành bài học!' : 'Đã bỏ đánh dấu hoàn thành', newStatus ? 'success' : 'info');
+
+        // Cập nhật lại nút không cần reload toàn bộ
+        const lessonInfo = document.getElementById('lessonInfo');
+        const oldBtn = lessonInfo.querySelector('button');
+        if (oldBtn) {
+            oldBtn.outerHTML = renderCompleteBtn(lessonId, newStatus);
+        }
+
+        // Cập nhật marker trên sidebar nếu có
+        const sidebarItem = document.getElementById(`lesson-${lessonId}`);
+        if (sidebarItem) {
+            sidebarItem.classList.toggle('completed', newStatus);
+            let checkEl = sidebarItem.querySelector('.lesson-done-icon');
+            if (newStatus && !checkEl) {
+                const icon = document.createElement('span');
+                icon.className = 'lesson-done-icon';
+                icon.style.cssText = 'color:#16a34a;font-size:0.9rem;margin-left:auto;';
+                icon.textContent = '✓';
+                sidebarItem.appendChild(icon);
+            } else if (!newStatus && checkEl) {
+                checkEl.remove();
+            }
+        }
+    } catch (err) {
+        showToast(err.message || 'Lỗi khi cập nhật trạng thái bài học', 'error');
+    }
 }
