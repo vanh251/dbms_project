@@ -7,9 +7,12 @@ import va.edu.entity.*;
 import va.edu.repository.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CourseService {
 
     private final CourseRepository courseRepository;
@@ -18,7 +21,9 @@ public class CourseService {
     private final UserRepository userRepository;
     private final UserCourseRepository userCourseRepository;
 
+    @Cacheable(value = "active_courses")
     public List<CourseDTO> getActiveCourses() {
+        log.info("BUFFER ĐỌC (CACHE MISS): Phải truy xuất danh sách khóa học Active từ Database!");
         return courseRepository.getClientCourseCards().stream()
                 .map(vw -> CourseDTO.builder()
                         .id(vw.getCourseId())
@@ -42,7 +47,9 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "course_detail", key = "#id")
     public CourseDetailDTO getCourseDetail(Integer id) {
+        log.info("BUFFER ĐỌC (CACHE MISS): Phải truy xuất chi tiết khóa học ID={} từ Database!", id);
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         return toCourseDetailDTO(course);

@@ -17,6 +17,7 @@ public class LessonService {
     private final UserCourseRepository userCourseRepository;
 
     private final UserLessonRepository userLessonRepository;
+    private final LessonProgressBuffer lessonProgressBuffer;
 
     public LessonDTO getLesson(Integer lessonId, String email) {
         Lesson lesson = lessonRepository.findById(lessonId)
@@ -31,10 +32,16 @@ public class LessonService {
         boolean hasPermission = userCourseRepository
                 .existsByUserIdAndCourseId(user.getId(), lesson.getCourse().getId());
 
-        // Lấy trạng thái hoàn thành
-        Boolean isCompleted = userLessonRepository.findByUserIdAndLessonId(user.getId(), lesson.getId())
-                .map(ul -> Boolean.TRUE.equals(ul.getIsCompleted()))
-                .orElse(false);
+        // Lấy trạng thái hoàn thành: Ưu tiên lấy từ RAM (buffer) trước, nếu không có mới query DB
+        Boolean bufferedStatus = lessonProgressBuffer.getBufferedProgress(user.getId(), lesson.getId());
+        Boolean isCompleted;
+        if (bufferedStatus != null) {
+            isCompleted = bufferedStatus;
+        } else {
+            isCompleted = userLessonRepository.findByUserIdAndLessonId(user.getId(), lesson.getId())
+                    .map(ul -> Boolean.TRUE.equals(ul.getIsCompleted()))
+                    .orElse(false);
+        }
 
         return LessonDTO.builder()
                 .id(lesson.getId())
@@ -61,18 +68,23 @@ public class LessonService {
             throw new RuntimeException("Bạn chưa ghi danh khóa học này");
         }
 
-        UserLesson userLesson = userLessonRepository.findByUserIdAndLessonId(user.getId(), lesson.getId())
-                .orElseGet(() -> UserLesson.builder()
-                        .user(user)
-                        .lesson(lesson)
-                        .course(lesson.getCourse())
-                        .isCompleted(false)
-                        .build());
+        // Đọc trạng thái hiện tại (ưu tiên từ Buffer)
+        Boolean bufferedStatus = lessonProgressBuffer.getBufferedProgress(user.getId(), lesson.getId());
+        boolean currentStatus;
+        if (bufferedStatus != null) {
+            currentStatus = bufferedStatus;
+        } else {
+            currentStatus = userLessonRepository.findByUserIdAndLessonId(user.getId(), lesson.getId())
+                    .map(ul -> Boolean.TRUE.equals(ul.getIsCompleted()))
+                    .orElse(false);
+        }
 
         // Toggle trạng thái
-        boolean newStatus = !Boolean.TRUE.equals(userLesson.getIsCompleted());
-        userLesson.setIsCompleted(newStatus);
-        userLessonRepository.save(userLesson);
+        boolean newStatus = !currentStatus;
+        
+        // Ghi vào RAM (Buffer) thay vì ghi trực tiếp xuống DB
+        lessonProgressBuffer.bufferProgress(user.getId(), lesson.getId(), lesson.getCourse().getId(), newStatus);
+        
         return newStatus;
     }
 }

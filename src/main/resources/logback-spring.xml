@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Mặc định kế thừa cấu hình console của Spring Boot -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <!-- Định nghĩa Appender riêng cho Buffer Events -->
+    <appender name="BUFFER_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/buffer-events.txt</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- Xoay vòng file mỗi ngày -->
+            <fileNamePattern>logs/buffer-events-%d{yyyy-MM-dd}.txt</fileNamePattern>
+            <!-- Giữ file trong 30 ngày -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Logger riêng cho các class xử lý Buffer -->
+    <!-- additivity="false" có nghĩa là log này CHỈ ghi vào file, KHÔNG in ra màn hình Console để tránh rối mắt -->
+    <logger name="va.edu.service.LessonProgressBuffer" level="INFO" additivity="false">
+        <appender-ref ref="BUFFER_FILE" />
+    </logger>
+    
+    <logger name="va.edu.service.CourseService" level="INFO" additivity="false">
+        <appender-ref ref="BUFFER_FILE" />
+    </logger>
+
+    <!-- Các log khác của hệ thống vẫn in ra Console như bình thường -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</configuration>

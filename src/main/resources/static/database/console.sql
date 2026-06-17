@@ -120,3 +120,30 @@ CREATE TABLE "payments" (
 );
 
 ALTER TABLE user_courses ADD CONSTRAINT uq_user_course UNIQUE (user_id, course_id);
+
+-- ==========================================
+-- INDEXES CHO TỐI ƯU HIỆU SUẤT (PERFORMANCE)
+-- ==========================================
+
+-- 1. Index cho các Foreign Key (Tối ưu truy vấn JOIN và DELETE/UPDATE)
+CREATE INDEX "idx_users_group_id" ON "users"("group_id");
+CREATE INDEX "idx_courses_category_id" ON "courses"("category_id");
+CREATE INDEX "idx_part_of_courses_course_id" ON "part_of_courses"("course_id");
+CREATE INDEX "idx_lessions_course_id" ON "lessions"("course_id");
+CREATE INDEX "idx_lessions_part_id" ON "lessions"("part_id");
+CREATE INDEX "idx_comments_user_id" ON "comments"("user_id");
+CREATE INDEX "idx_comments_lession_id" ON "comments"("lession_id");
+CREATE INDEX "idx_comments_parent_id" ON "comments"("parent_id");
+CREATE INDEX "idx_user_lessons_user_id" ON "user_lessons"("user_id");
+CREATE INDEX "idx_user_lessons_course_id" ON "user_lessons"("course_id");
+CREATE INDEX "idx_payments_user_id" ON "payments"("user_id");
+CREATE INDEX "idx_payments_course_id" ON "payments"("course_id");
+
+-- 2. Index cho các trường thường xuyên truy vấn/lọc (Filtering)
+CREATE INDEX "idx_courses_status" ON "courses"("status");
+CREATE INDEX "idx_payments_transaction_id" ON "payments"("transaction_id");
+CREATE INDEX "idx_users_status" ON "users"("status");
+
+-- 3. Composite Index (Index kết hợp)
+-- Tối ưu khi lấy danh sách comment của một bài học và sắp xếp theo thời gian mới nhất
+CREATE INDEX "idx_comments_lession_created" ON "comments"("lession_id", "create_at" DESC);
