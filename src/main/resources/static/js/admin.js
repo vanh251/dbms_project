@@ -80,7 +80,7 @@ async function openCreateCourse() {
         <div class="form-row">
             <div class="form-group"><label>Thời lượng</label><input type="text" id="fc-time" placeholder="20 giờ"></div>
             <div class="form-group"><label>Trạng thái</label>
-                <select id="fc-status"><option value="0">Ẩn</option><option value="1">Hiển thị</option></select>
+                <select id="fc-status" disabled><option value="0" selected>Ẩn (Mặc định)</option></select>
             </div>
         </div>
         <div class="form-group"><label>Danh mục</label><select id="fc-cat"><option value="">-- Chọn --</option>${catOptions}</select></div>

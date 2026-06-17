@@ -43,46 +43,50 @@ public class AdminService {
     }
 
     public CourseDTO createCourse(CourseRequest req) {
-        CourseCategory category = req.getCategoryId() != null
-                ? categoryRepository.findById(req.getCategoryId()).orElse(null)
-                : null;
-
-        Course course = Course.builder()
-                .name(req.getName())
-                .slug(req.getSlug())
-                .thumbnail(req.getThumbnail())
-                .description(req.getDescription())
-                .require(req.getRequire())
-                .totalTime(req.getTotalTime())
-                .price(req.getPrice())
-                .oldPrice(req.getOldPrice())
-                .category(category)
-                .status(req.getStatus() != null ? req.getStatus() : 0)
-                .build();
-        Course saved = courseRepository.save(course);
+        Integer newCourseId = courseRepository.createCourse(
+                req.getName(),
+                req.getSlug(),
+                req.getThumbnail(),
+                req.getDescription(),
+                req.getRequire(),
+                req.getPrice(),
+                req.getOldPrice(),
+                req.getTotalTime(),
+                req.getCategoryId()
+        );
+        Course saved = courseRepository.findById(newCourseId).orElseThrow(() -> new RuntimeException("Course not found after creation"));
         return toCourseDTO(saved);
     }
 
     public CourseDTO updateCourse(Integer id, CourseRequest req) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
-        CourseCategory category = req.getCategoryId() != null
-                ? categoryRepository.findById(req.getCategoryId()).orElse(null)
-                : null;
+        
+        Integer status = req.getStatus() != null ? req.getStatus() : course.getStatus();
 
-        course.setName(req.getName());
-        course.setSlug(req.getSlug());
-        course.setThumbnail(req.getThumbnail());
-        course.setDescription(req.getDescription());
-        course.setRequire(req.getRequire());
-        course.setTotalTime(req.getTotalTime());
-        course.setPrice(req.getPrice());
-        course.setOldPrice(req.getOldPrice());
-        course.setCategory(category);
-        if (req.getStatus() != null)
-            course.setStatus(req.getStatus());
-        courseRepository.save(course);
-        return toCourseDTO(course);
+        try {
+            courseRepository.updateCourse(
+                    id,
+                    req.getName(),
+                    req.getSlug(),
+                    req.getThumbnail(),
+                    req.getDescription(),
+                    req.getRequire(),
+                    req.getPrice(),
+                    req.getOldPrice(),
+                    req.getTotalTime(),
+                    req.getCategoryId(),
+                    status
+            );
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("Không thể publish")) {
+                throw new RuntimeException("Không thể hiển thị: Khóa học cần có ít nhất 1 chương và 1 bài học.");
+            }
+            throw new RuntimeException(e.getMessage());
+        }
+        
+        Course updated = courseRepository.findById(id).orElseThrow(() -> new RuntimeException("Course not found"));
+        return toCourseDTO(updated);
     }
 
     public void deleteCourse(Integer id) {

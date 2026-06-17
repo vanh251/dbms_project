@@ -45,24 +45,34 @@ $$;
 -- 2. sp_create_course
 CREATE OR REPLACE PROCEDURE sp_create_course(
     p_name VARCHAR, p_slug VARCHAR, p_thumbnail VARCHAR, p_description VARCHAR,
-    p_require TEXT, p_price VARCHAR, p_category_id INT, INOUT p_new_course_id INT DEFAULT NULL
+    p_require TEXT, p_price VARCHAR, p_old_price VARCHAR, p_total_time VARCHAR, p_category_id INT, INOUT p_new_course_id INT DEFAULT NULL
 ) LANGUAGE plpgsql AS $$
 BEGIN
-INSERT INTO "courses" (name, slug, thumbnail, description, require, price, category_id, status, total_lession, total_part)
-VALUES (p_name, p_slug, p_thumbnail, p_description, p_require, p_price, p_category_id, 0, 0, 0) RETURNING id INTO p_new_course_id;
+INSERT INTO "courses" (name, slug, thumbnail, description, require, price, old_price, total_time, category_id, status, total_lession, total_part)
+VALUES (p_name, p_slug, p_thumbnail, p_description, p_require, p_price, p_old_price, p_total_time, p_category_id, 0, 0, 0) RETURNING id INTO p_new_course_id;
 END;
 $$;
 
--- 3. sp_publish_course
-CREATE OR REPLACE PROCEDURE sp_publish_course(p_course_id INT) LANGUAGE plpgsql AS $$
+-- 3. sp_update_course
+CREATE OR REPLACE PROCEDURE sp_update_course(
+    p_course_id INT, p_name VARCHAR, p_slug VARCHAR, p_thumbnail VARCHAR,
+    p_description VARCHAR, p_require TEXT, p_price VARCHAR, p_old_price VARCHAR,
+    p_total_time VARCHAR, p_category_id INT, p_status INT
+) LANGUAGE plpgsql AS $$
 DECLARE v_total_lesson INT; v_total_part INT;
 BEGIN
-SELECT total_lession, total_part INTO v_total_lesson, v_total_part FROM "courses" WHERE id = p_course_id;
-IF v_total_lesson > 0 AND v_total_part > 0 THEN
-UPDATE "courses" SET status = 1, update_at = CURRENT_TIMESTAMP WHERE id = p_course_id;
-ELSE
-        RAISE EXCEPTION 'Không thể publish: Khóa học chưa có dữ liệu!';
-END IF;
+    IF p_status = 1 THEN
+        SELECT total_lession, total_part INTO v_total_lesson, v_total_part FROM "courses" WHERE id = p_course_id;
+        IF v_total_lesson <= 0 OR v_total_part <= 0 THEN
+            RAISE EXCEPTION 'Không thể publish: Khóa học chưa có dữ liệu (cần ít nhất 1 chương và 1 bài học)!';
+        END IF;
+    END IF;
+
+    UPDATE "courses" 
+    SET name = p_name, slug = p_slug, thumbnail = p_thumbnail, description = p_description,
+        require = p_require, price = p_price, old_price = p_old_price, total_time = p_total_time,
+        category_id = p_category_id, status = p_status, update_at = CURRENT_TIMESTAMP
+    WHERE id = p_course_id;
 END;
 $$;
 
