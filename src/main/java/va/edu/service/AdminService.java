@@ -166,18 +166,11 @@ public class AdminService {
                     .filter(s -> !s.isEmpty())
                     .map(Integer::parseInt)
                     .forEach(courseId -> {
-                        if (!userCourseRepository.existsByUserIdAndCourseId(userId, courseId)) {
-                            courseRepository.findById(courseId).ifPresent(course -> {
-                                va.edu.entity.UserCourse uc = va.edu.entity.UserCourse.builder()
-                                        .user(user)
-                                        .course(course)
-                                        .status(1)
-                                        .progressPercent(0)
-                                        .createAt(java.time.LocalDateTime.now())
-                                        .updateAt(java.time.LocalDateTime.now())
-                                        .build();
-                                userCourseRepository.save(uc);
-                            });
+                        try {
+                            userCourseRepository.enrollCourse(userId, courseId);
+                        } catch (Exception e) {
+                            // Bỏ qua nếu đã ghi danh hoặc khóa học chưa publish
+                            System.out.println("Không thể ghi danh user " + userId + " vào course " + courseId + ": " + e.getMessage());
                         }
                     });
         }
