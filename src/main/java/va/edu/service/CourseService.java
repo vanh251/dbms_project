@@ -2,6 +2,7 @@ package va.edu.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import va.edu.dto.*;
 import va.edu.entity.*;
 import va.edu.repository.*;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true) // Tất cả method đều chỉ đọc
 public class CourseService {
 
     private final CourseRepository courseRepository;

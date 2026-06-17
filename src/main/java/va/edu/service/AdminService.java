@@ -2,6 +2,8 @@ package va.edu.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import va.edu.dto.*;
 import va.edu.dto.request.CourseRequest;
 import va.edu.entity.*;
@@ -11,6 +13,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true) // Mặc định read-only cho toàn service
 public class AdminService {
 
     private final CourseRepository courseRepository;
@@ -42,6 +45,7 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(rollbackFor = Exception.class) // Ghi DB: gọi sp_create_course
     public CourseDTO createCourse(CourseRequest req) {
         Integer newCourseId = courseRepository.createCourse(
                 req.getName(),
@@ -58,6 +62,7 @@ public class AdminService {
         return toCourseDTO(saved);
     }
 
+    @Transactional(rollbackFor = Exception.class) // Ghi DB: cập nhật course
     public CourseDTO updateCourse(Integer id, CourseRequest req) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
@@ -89,11 +94,30 @@ public class AdminService {
         return toCourseDTO(updated);
     }
 
+    @Transactional(rollbackFor = Exception.class) // Ghi DB: gọi sp_delete_course (không có COMMIT/ROLLBACK trong SQL)
     public void deleteCourse(Integer id) {
         courseRepository.deleteCourse(id);
     }
 
+    /**
+     * Hủy khóa học khẩn cấp và hoàn tiền.
+     * GỌI STORED PROCEDURE sp_transaction_cancel_course_and_refund.
+     *
+     * ★ Dùng Propagation.NOT_SUPPORTED ★
+     *   → Spring KHÔNG mở transaction bao ngoài
+     *   → Procedure tự thực hiện 3 bước trong 1 DB Transaction:
+     *       BƯỚC 1: UPDATE courses SET status=-1 (ẩn khóa học)
+     *       BƯỚC 2: UPDATE user_courses SET status=0 (thu hồi quyền học viên)
+     *       BƯỚC 3: UPDATE payments SET status=-1 (đánh dấu cần hoàn tiền)
+     *   → DB tự COMMIT nếu OK, ROLLBACK nếu có lỗi ở bất kỳ bước nào
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void cancelCourseAndRefund(Integer courseId) {
+        courseRepository.cancelCourseAndRefund(courseId);
+    }
+
     // --- PART CRUD ---
+    @Transactional(rollbackFor = Exception.class) // Ghi DB: thêm chương mới
     public Map<String, Object> addPart(Integer courseId, String name) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
@@ -156,6 +180,7 @@ public class AdminService {
      * Đây là nguồn chân lý duy nhất – không còn dùng cột permission trên bảng
      * users.
      */
+    @Transactional(rollbackFor = Exception.class) // Ghi DB: gọi sp_enroll_course
     public UserDTO grantPermission(Integer userId, String courseIds) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -187,12 +212,14 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(rollbackFor = Exception.class) // Ghi DB: tạo danh mục mới
     public Map<String, Object> createCategory(String name) {
         CourseCategory category = CourseCategory.builder().name(name).build();
         CourseCategory saved = categoryRepository.save(category);
         return Map.<String, Object>of("id", saved.getId(), "name", saved.getName());
     }
 
+    @Transactional(rollbackFor = Exception.class) // Ghi DB: xóa danh mục
     public void deleteCategory(Integer id) {
         categoryRepository.deleteById(id);
     }

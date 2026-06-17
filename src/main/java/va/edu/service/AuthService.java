@@ -3,6 +3,7 @@ package va.edu.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import va.edu.dto.request.AuthRequest;
 import va.edu.dto.request.RegisterRequest;
 import va.edu.dto.response.AuthResponse;
@@ -12,6 +13,7 @@ import va.edu.security.JwtUtil;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true) // Mặc định read-only cho toàn service
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -19,6 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    @Transactional(rollbackFor = Exception.class) // Ghi DB: lưu user mới
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");

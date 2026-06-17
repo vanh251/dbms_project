@@ -2,6 +2,7 @@ package va.edu.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import va.edu.dto.*;
 import va.edu.dto.request.CommentRequest;
 import va.edu.entity.*;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true) // Mặc định read-only cho toàn service
 public class CommentService {
 
     private final CommentRepository commentRepository;
@@ -22,6 +24,7 @@ public class CommentService {
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    @Transactional(rollbackFor = Exception.class) // Ghi DB: gọi sp_add_comment rồi query lại
     public CommentDTO addComment(Integer lessonId, String email, CommentRequest req) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));

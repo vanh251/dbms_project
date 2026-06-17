@@ -41,6 +41,16 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("Đã xóa khóa học", null));
     }
 
+    /**
+     * Hủy khóa học khẩn cấp + hoàn tiền (gọi sp_transaction_cancel_course_and_refund).
+     * Transaction hoàn toàn do PostgreSQL quản lý (COMMIT/ROLLBACK trong procedure).
+     */
+    @PostMapping("/courses/{id}/cancel-and-refund")
+    public ResponseEntity<ApiResponse<Void>> cancelCourseAndRefund(@PathVariable Integer id) {
+        adminService.cancelCourseAndRefund(id);
+        return ResponseEntity.ok(ApiResponse.success("Đã hủy khóa học và đánh dấu hoàn tiền", null));
+    }
+
     // --- PARTS ---
     @PostMapping("/courses/{courseId}/parts")
     public ResponseEntity<ApiResponse<Map<String, Object>>> addPart(

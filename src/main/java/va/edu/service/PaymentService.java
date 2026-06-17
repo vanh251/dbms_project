@@ -1,8 +1,9 @@
 package va.edu.service;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import va.edu.dto.PaymentDTO;
 import va.edu.dto.request.PaymentRequest;
 import va.edu.entity.Course;
@@ -10,23 +11,40 @@ import va.edu.entity.Payment;
 import va.edu.entity.User;
 import va.edu.repository.CourseRepository;
 import va.edu.repository.PaymentRepository;
+import va.edu.repository.UserCourseRepository;
 import va.edu.repository.UserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.transaction.annotation.Transactional;
-
+/**
+ * PaymentService - Quản lý thanh toán và ghi danh khóa học.
+ *
+ * CHIẾN LƯỢC TRANSACTION:
+ * ┌─────────────────────────────────────────────────────────────────┐
+ * │ Phương thức có COMMIT/ROLLBACK trong DB Procedure               │
+ * │   → Dùng Propagation.NOT_SUPPORTED: Spring KHÔNG mở transaction │
+ * │   → DB Procedure tự quản lý COMMIT/ROLLBACK hoàn toàn          │
+ * │                                                                 │
+ * │ Phương thức chỉ dùng JPA thuần (không có procedure transaction) │
+ * │   → Dùng @Transactional bình thường: Spring quản lý            │
+ * └─────────────────────────────────────────────────────────────────┘
+ */
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
-    private final va.edu.repository.UserCourseRepository userCourseRepository;
+    private final UserCourseRepository userCourseRepository;
 
+    /**
+     * Tạo đơn hàng thanh toán (status = 0 - chờ xác nhận).
+     * Không có stored procedure riêng -> Spring @Transactional quản lý JPA.
+     */
+    @Transactional(rollbackFor = Exception.class)
     public PaymentDTO createPaymentOrder(String email, Integer courseId, PaymentRequest req) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -42,7 +60,7 @@ public class PaymentService {
                 }
             }
         } catch (Exception e) {
-            // Ignore parse error, default to 0
+            // Bỏ qua lỗi parse, mặc định = 0
         }
 
         Payment payment = Payment.builder()
@@ -59,36 +77,37 @@ public class PaymentService {
         return toDTO(payment);
     }
 
+    /**
+     * XÁC NHẬN THANH TOÁN - GỌI STORED PROCEDURE sp_transaction_confirm_payment.
+     *
+     * ★ Dùng Propagation.NOT_SUPPORTED ★
+     *   → Spring tạm dừng/không mở transaction
+     *   → Stored procedure tự thực thi COMMIT hoặc ROLLBACK trong PostgreSQL
+     *   → Đây là "tinh thần DBMS thuần": transaction do DB quản lý, không phải Spring
+     *
+     * Procedure thực hiện 2 bước trong 1 DB Transaction:
+     *   BƯỚC 1: UPDATE payments SET status=1, transaction_id=...
+     *   BƯỚC 2: INSERT INTO user_courses (ghi danh học viên tự động)
+     *   → Nếu lỗi bất kỳ bước nào: DB tự ROLLBACK toàn bộ
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public PaymentDTO confirmPayment(Integer orderId) {
+        // Kiểm tra đơn tồn tại trước khi gọi procedure
         Payment payment = paymentRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
 
         if (payment.getStatus() == 1) {
-            return toDTO(payment); // Already confirmed
+            return toDTO(payment); // Đã xác nhận trước đó
         }
 
-        payment.setStatus(1);
-        payment.setTransactionId("MANUAL_CONFIRM");
-        payment.setUpdateAt(java.time.LocalDateTime.now());
-        payment = paymentRepository.save(payment);
+        // ★ GỌI STORED PROCEDURE - PostgreSQL tự COMMIT/ROLLBACK ★
+        // Spring KHÔNG có transaction bao ngoài (NOT_SUPPORTED)
+        // → sp_transaction_confirm_payment toàn quyền kiểm soát giao dịch
+        paymentRepository.confirmPayment(orderId, "MANUAL_CONFIRM");
 
-        User user = payment.getUser();
-        Course course = payment.getCourse();
-
-        // Ghi danh user vào bảng user_courses (nguon chân lý duy nhất về quyền)
-        boolean alreadyEnrolled = userCourseRepository
-                .existsByUserIdAndCourseId(user.getId(), course.getId());
-        if (!alreadyEnrolled) {
-            va.edu.entity.UserCourse uc = va.edu.entity.UserCourse.builder()
-                    .user(user)
-                    .course(course)
-                    .status(1)
-                    .progressPercent(0)
-                    .createAt(java.time.LocalDateTime.now())
-                    .updateAt(java.time.LocalDateTime.now())
-                    .build();
-            userCourseRepository.save(uc);
-        }
+        // Reload lại entity để lấy dữ liệu mới nhất từ DB sau khi procedure chạy
+        payment = paymentRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Payment not found after confirm"));
 
         return toDTO(payment);
     }
