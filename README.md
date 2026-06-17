@@ -95,7 +95,7 @@ Hệ thống được thiết kế với các bảng chính:
 
 ---
 
-## 🚀 Tối ưu Hiệu suất (Performance Optimization)
+##  Tối ưu Hiệu suất (Performance Optimization)
 
 Hệ thống được thiết kế và tối ưu hóa để chịu tải cao với các cơ chế sau:
 
