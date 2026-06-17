@@ -1,0 +1,14 @@
+2026-06-17 22:17:18 [scheduling-1] INFO  va.edu.service.CourseService - BUFFER ĐỌC: Đã tự động dọn dẹp toàn bộ bộ nhớ đệm (RAM) sau 30 phút để cập nhật dữ liệu mới.
+2026-06-17 22:17:40 [http-nio-8080-exec-10] INFO  va.edu.service.CourseService - BUFFER ĐỌC (CACHE MISS): Phải truy xuất danh sách khóa học Active từ Database!
+2026-06-17 22:18:40 [http-nio-8080-exec-10] INFO  va.edu.service.CourseService - BUFFER ĐỌC (CACHE MISS): Phải truy xuất chi tiết khóa học ID=4 từ Database!
+2026-06-17 22:18:46 [http-nio-8080-exec-9] INFO  va.edu.service.LessonProgressBuffer - BUFFER GHI (RAM): Đã đưa tiến độ bài học 17 của User 9 vào bộ đệm tạm thời.
+2026-06-17 22:18:48 [scheduling-1] INFO  va.edu.service.LessonProgressBuffer - BUFFER GHI (DB): Đã xả thành công lô (batch) 1 bản ghi tiến độ xuống Database.
+2026-06-17 22:18:53 [http-nio-8080-exec-10] INFO  va.edu.service.LessonProgressBuffer - BUFFER GHI (RAM): Đã đưa tiến độ bài học 18 của User 9 vào bộ đệm tạm thời.
+2026-06-17 22:18:58 [scheduling-1] INFO  va.edu.service.LessonProgressBuffer - BUFFER GHI (DB): Đã xả thành công lô (batch) 1 bản ghi tiến độ xuống Database.
+2026-06-17 22:19:00 [http-nio-8080-exec-3] INFO  va.edu.service.LessonProgressBuffer - BUFFER GHI (RAM): Đã đưa tiến độ bài học 19 của User 9 vào bộ đệm tạm thời.
+2026-06-17 22:19:08 [scheduling-1] INFO  va.edu.service.LessonProgressBuffer - BUFFER GHI (DB): Đã xả thành công lô (batch) 1 bản ghi tiến độ xuống Database.
+2026-06-17 22:27:54 [http-nio-8080-exec-10] INFO  va.edu.service.CourseService - BUFFER ĐỌC (CACHE MISS): Phải truy xuất chi tiết khóa học ID=1 từ Database!
+2026-06-17 22:35:24 [http-nio-8080-exec-9] INFO  va.edu.service.LessonProgressBuffer - BUFFER GHI (RAM): Đã đưa tiến độ bài học 17 của User 9 vào bộ đệm tạm thời.
+2026-06-17 22:35:28 [scheduling-1] INFO  va.edu.service.LessonProgressBuffer - BUFFER GHI (DB): Đã xả thành công lô (batch) 1 bản ghi tiến độ xuống Database.
+2026-06-17 23:11:15 [scheduling-1] INFO  va.edu.service.CourseService - BUFFER ĐỌC: Đã tự động dọn dẹp toàn bộ bộ nhớ đệm (RAM) sau 30 phút để cập nhật dữ liệu mới.
+2026-06-17 23:18:49 [scheduling-1] INFO  va.edu.service.CourseService - BUFFER ĐỌC: Đã tự động dọn dẹp toàn bộ bộ nhớ đệm (RAM) sau 30 phút để cập nhật dữ liệu mới.
