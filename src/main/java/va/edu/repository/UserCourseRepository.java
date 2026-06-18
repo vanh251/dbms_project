@@ -25,6 +25,4 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Integer>
     @Procedure(procedureName = "sp_enroll_course")
     void enrollCourse(Integer p_user_id, Integer p_course_id);
 
-    @Procedure(procedureName = "sp_unenroll_course")
-    void unenrollCourse(Integer p_user_id, Integer p_course_id);
 }
